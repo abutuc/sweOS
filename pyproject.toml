@@ -19,6 +19,12 @@ dev = [
   "pytest==8.3.5",
 ]
 
+[project.scripts]
+sweos-create-tables = "app.scripts.create_tables:main"
+sweos-seed-default-user = "app.scripts.seed_default_user:main"
+sweos-seed-skill-catalog = "app.scripts.seed_skill_catalog:main"
+sweos-bootstrap-epic1 = "app.scripts.bootstrap_epic1:main"
+
 [build-system]
 requires = ["setuptools>=80.0"]
 build-backend = "setuptools.build_meta"
