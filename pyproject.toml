@@ -5,18 +5,18 @@ description = "FastAPI backend for sweOS"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  "alembic>=1.16.0,<2.0.0",
-  "fastapi>=0.115.0,<1.0.0",
-  "psycopg[binary]>=3.2.0,<4.0.0",
-  "pydantic-settings>=2.8.0,<3.0.0",
-  "sqlalchemy>=2.0.40,<3.0.0",
-  "uvicorn[standard]>=0.34.0,<1.0.0",
+  "alembic==1.14.1",
+  "fastapi==0.115.12",
+  "psycopg[binary]==3.2.3",
+  "pydantic-settings==2.6.1",
+  "sqlalchemy==2.0.36",
+  "uvicorn[standard]==0.32.1",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "httpx>=0.28.0,<1.0.0",
-  "pytest>=8.3.0,<9.0.0",
+  "httpx==0.27.2",
+  "pytest==8.3.5",
 ]
 
 [build-system]
