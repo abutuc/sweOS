@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 from app.api.dependencies import get_db_session
 from app.core.bootstrap import get_or_create_default_user
 from app.models.user_profile import UserProfile
-from app.schemas.profile import ProfileEnvelope, ProfileRead
+from app.schemas.profile import (
+    ProfileEnvelope,
+    ProfileRead,
+    ProfileUpdate,
+    ProfileUpdateEnvelope,
+    ProfileUpdateResult,
+)
 
 
 router = APIRouter(prefix="/profile", tags=["profile"])
@@ -36,3 +42,24 @@ def get_profile(db: Session = Depends(get_db_session)) -> ProfileEnvelope:
         )
 
     return ProfileEnvelope(data=ProfileRead.model_validate(profile))
+
+
+@router.put("", response_model=ProfileUpdateEnvelope)
+def upsert_profile(
+    payload: ProfileUpdate,
+    db: Session = Depends(get_db_session),
+) -> ProfileUpdateEnvelope:
+    user = get_or_create_default_user(db)
+    profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).one_or_none()
+
+    profile_data = payload.model_dump()
+    if profile is None:
+        profile = UserProfile(user_id=user.id, **profile_data)
+        db.add(profile)
+    else:
+        for field, value in profile_data.items():
+            setattr(profile, field, value)
+
+    db.commit()
+
+    return ProfileUpdateEnvelope(data=ProfileUpdateResult(updated=True))
