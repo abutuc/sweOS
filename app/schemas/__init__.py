@@ -7,6 +7,15 @@ from app.schemas.profile import (
     ProfileUpdateEnvelope,
     ProfileUpdateResult,
 )
+from app.schemas.skill import (
+    SkillCatalogEnvelope,
+    SkillCatalogItem,
+    UserSkillRead,
+    UserSkillsEnvelope,
+    UserSkillsUpsertEnvelope,
+    UserSkillsUpsertRequest,
+    UserSkillsUpsertResult,
+)
 
 __all__ = [
     "ProfileEnvelope",
@@ -14,4 +23,11 @@ __all__ = [
     "ProfileUpdate",
     "ProfileUpdateEnvelope",
     "ProfileUpdateResult",
+    "SkillCatalogEnvelope",
+    "SkillCatalogItem",
+    "UserSkillRead",
+    "UserSkillsEnvelope",
+    "UserSkillsUpsertEnvelope",
+    "UserSkillsUpsertRequest",
+    "UserSkillsUpsertResult",
 ]
