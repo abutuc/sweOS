@@ -16,6 +16,8 @@ This repository currently contains a FastAPI backend scaffold for Epic 1.
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
 docker compose up -d db
+sweos-create-tables
+sweos-bootstrap-epic1
 ```
 
 ### Run Tests
@@ -31,4 +33,15 @@ To run a smaller slice while iterating:
 .venv/bin/pytest tests/test_skills_api.py
 .venv/bin/pytest tests/test_seeds.py
 .venv/bin/pytest tests/test_bootstrap.py
+```
+
+### Bootstrap Utilities
+
+After the editable install, these commands are available:
+
+```bash
+sweos-create-tables
+sweos-seed-default-user
+sweos-seed-skill-catalog
+sweos-bootstrap-epic1
 ```
