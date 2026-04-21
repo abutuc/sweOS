@@ -1,11 +1,15 @@
 import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from decimal import Decimal
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
 from app.api import skills as skills_api
 from app.api.dependencies import get_db_session
 from app.main import app
+from app.models.user_skill import ProficiencyLevel
 
 
 class _Predicate:
@@ -168,3 +172,92 @@ def test_get_skills_catalog_filters_by_category():
             "description": None,
         }
     ]
+
+
+class _FakeUserSkillQuery:
+    def __init__(self, user_skills):
+        self._user_skills = user_skills
+
+    def filter(self, predicate):
+        filtered = []
+        for user_skill in self._user_skills:
+            if predicate.compare(user_skill):
+                filtered.append(user_skill)
+        return _FakeUserSkillQuery(filtered)
+
+    def all(self):
+        return self._user_skills
+
+
+class _FakeUserSkillModel:
+    user_id = _FakeColumn("user_id")
+
+
+class _FakeUserSkillSession:
+    def __init__(self, user_skills):
+        self._user_skills = user_skills
+
+    def query(self, *_args, **_kwargs):
+        return _FakeUserSkillQuery(self._user_skills)
+
+    def close(self):
+        return None
+
+
+def test_get_my_skills_returns_structured_skill_entries(monkeypatch):
+    user_id = uuid.uuid4()
+    skill_id = uuid.uuid4()
+    evaluated_at = datetime(2026, 4, 22, 10, 0, tzinfo=timezone.utc)
+
+    fake_session = _FakeUserSkillSession(
+        [
+            SimpleNamespace(
+                user_id=user_id,
+                skill=SimpleNamespace(
+                    id=skill_id,
+                    slug="python",
+                    name="Python",
+                    category="language",
+                ),
+                self_assessed_level=ProficiencyLevel.advanced,
+                measured_level=ProficiencyLevel.intermediate,
+                confidence_score=Decimal("0.74"),
+                evidence_count=8,
+                last_evaluated_at=evaluated_at,
+            )
+        ]
+    )
+
+    def fake_get_or_create_default_user(_db):
+        return SimpleNamespace(id=user_id)
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr(skills_api, "get_or_create_default_user", fake_get_or_create_default_user)
+    original_user_skill_model = skills_api.UserSkill
+    skills_api.UserSkill = _FakeUserSkillModel
+    app.dependency_overrides[get_db_session] = override_get_db_session
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/skills/me")
+
+    skills_api.UserSkill = original_user_skill_model
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "data": [
+            {
+                "skill_id": str(skill_id),
+                "skill_slug": "python",
+                "skill_name": "Python",
+                "category": "language",
+                "self_assessed_level": "advanced",
+                "measured_level": "intermediate",
+                "confidence_score": "0.74",
+                "evidence_count": 8,
+                "last_evaluated_at": "2026-04-22T10:00:00Z",
+            }
+        ]
+    }
