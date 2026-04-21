@@ -30,6 +30,9 @@ class _FakeColumn:
     def __eq__(self, other):
         return _Predicate(lambda obj: getattr(obj, self.field_name) == other)
 
+    def in_(self, values):
+        return _Predicate(lambda obj: getattr(obj, self.field_name) in values)
+
     def ilike(self, pattern: str):
         needle = pattern.strip("%").lower()
         return _Predicate(lambda obj: needle in getattr(obj, self.field_name).lower())
@@ -178,15 +181,20 @@ class _FakeUserSkillQuery:
     def __init__(self, user_skills):
         self._user_skills = user_skills
 
-    def filter(self, predicate):
+    def filter(self, *predicates):
         filtered = []
         for user_skill in self._user_skills:
-            if predicate.compare(user_skill):
+            if all(predicate.compare(user_skill) for predicate in predicates):
                 filtered.append(user_skill)
         return _FakeUserSkillQuery(filtered)
 
     def all(self):
         return self._user_skills
+
+    def one_or_none(self):
+        if not self._user_skills:
+            return None
+        return self._user_skills[0]
 
 
 class _FakeUserSkillModel:
@@ -196,9 +204,16 @@ class _FakeUserSkillModel:
 class _FakeUserSkillSession:
     def __init__(self, user_skills):
         self._user_skills = user_skills
+        self.committed = False
 
     def query(self, *_args, **_kwargs):
         return _FakeUserSkillQuery(self._user_skills)
+
+    def add(self, obj):
+        self._user_skills.append(obj)
+
+    def commit(self):
+        self.committed = True
 
     def close(self):
         return None
@@ -261,3 +276,66 @@ def test_get_my_skills_returns_structured_skill_entries(monkeypatch):
             }
         ]
     }
+
+
+def test_put_my_skills_creates_and_updates_user_skills(monkeypatch):
+    user_id = uuid.uuid4()
+    existing_skill_id = uuid.uuid4()
+    new_skill_id = uuid.uuid4()
+
+    existing_user_skill = SimpleNamespace(
+        user_id=user_id,
+        skill_id=existing_skill_id,
+        self_assessed_level=ProficiencyLevel.beginner,
+    )
+    fake_session = _FakeUserSkillSession([existing_user_skill])
+
+    def fake_get_or_create_default_user(_db):
+        return SimpleNamespace(id=user_id)
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr(skills_api, "get_or_create_default_user", fake_get_or_create_default_user)
+    original_user_skill_model = skills_api.UserSkill
+
+    class _FakeWritableUserSkillModel(_FakeUserSkillModel):
+        skill_id = _FakeColumn("skill_id")
+
+        def __init__(self, user_id, skill_id, self_assessed_level):
+            self.user_id = user_id
+            self.skill_id = skill_id
+            self.self_assessed_level = self_assessed_level
+
+    skills_api.UserSkill = _FakeWritableUserSkillModel
+    app.dependency_overrides[get_db_session] = override_get_db_session
+
+    with TestClient(app) as client:
+        response = client.put(
+            "/api/v1/skills/me",
+            json={
+                "skills": [
+                    {
+                        "skill_id": str(existing_skill_id),
+                        "self_assessed_level": "advanced",
+                    },
+                    {
+                        "skill_id": str(new_skill_id),
+                        "self_assessed_level": "intermediate",
+                    },
+                ]
+            },
+        )
+
+    skills_api.UserSkill = original_user_skill_model
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {"data": {"updated_count": 2}}
+    assert fake_session.committed is True
+    assert existing_user_skill.self_assessed_level == ProficiencyLevel.advanced
+    created_user_skill = next(
+        user_skill for user_skill in fake_session._user_skills if user_skill.skill_id == new_skill_id
+    )
+    assert created_user_skill.user_id == user_id
+    assert created_user_skill.self_assessed_level == ProficiencyLevel.intermediate

@@ -10,6 +10,9 @@ from app.schemas.skill import (
     SkillCatalogItem,
     UserSkillRead,
     UserSkillsEnvelope,
+    UserSkillsUpsertEnvelope,
+    UserSkillsUpsertRequest,
+    UserSkillsUpsertResult,
 )
 
 
@@ -55,3 +58,34 @@ def get_my_skills(db: Session = Depends(get_db_session)) -> UserSkillsEnvelope:
         for user_skill in user_skills
     ]
     return UserSkillsEnvelope(data=items)
+
+
+@router.put("/me", response_model=UserSkillsUpsertEnvelope)
+def upsert_my_skills(
+    payload: UserSkillsUpsertRequest,
+    db: Session = Depends(get_db_session),
+) -> UserSkillsUpsertEnvelope:
+    user = get_or_create_default_user(db)
+    updated_count = 0
+
+    for item in payload.skills:
+        user_skill = (
+            db.query(UserSkill)
+            .filter(UserSkill.user_id == user.id, UserSkill.skill_id == item.skill_id)
+            .one_or_none()
+        )
+
+        if user_skill is None:
+            user_skill = UserSkill(
+                user_id=user.id,
+                skill_id=item.skill_id,
+                self_assessed_level=item.self_assessed_level,
+            )
+            db.add(user_skill)
+        else:
+            user_skill.self_assessed_level = item.self_assessed_level
+
+        updated_count += 1
+
+    db.commit()
+    return UserSkillsUpsertEnvelope(data=UserSkillsUpsertResult(updated_count=updated_count))
