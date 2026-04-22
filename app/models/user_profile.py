@@ -22,6 +22,7 @@ class UserProfile(Base):
     current_role: Mapped[str | None] = mapped_column(String, nullable=True)
     stack: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     target_role: Mapped[str | None] = mapped_column(String, nullable=True)
+    target_roles: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     target_seniority: Mapped[str | None] = mapped_column(String, nullable=True)
     preferred_locations: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     preferred_work_modes: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
