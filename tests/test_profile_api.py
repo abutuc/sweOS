@@ -66,17 +66,17 @@ def test_get_profile_returns_empty_profile_shape(monkeypatch):
     assert response.status_code == 200
     assert response.json() == {
         "data": {
-            "user_id": str(default_user_id),
+            "userId": str(default_user_id),
             "headline": None,
             "bio": None,
-            "years_experience": "0.0",
-            "current_role": None,
-            "target_role": None,
-            "target_seniority": None,
-            "preferred_locations": [],
-            "preferred_work_modes": [],
-            "salary_expectation_min": None,
-            "salary_expectation_max": None,
+            "yearsExperience": "0.0",
+            "currentRole": None,
+            "targetRole": None,
+            "targetSeniority": None,
+            "preferredLocations": [],
+            "preferredWorkModes": [],
+            "salaryExpectationMin": None,
+            "salaryExpectationMax": None,
             "summary": None,
         }
     }
