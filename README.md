@@ -65,3 +65,15 @@ Roll the schema back one revision:
 ```bash
 .venv/bin/alembic downgrade -1
 ```
+
+### Integration Tests
+
+Integration tests expect Postgres to be reachable at the configured `database_url`.
+If the database is unavailable, the integration suite will skip cleanly.
+
+```bash
+.venv/bin/pytest -m integration
+.venv/bin/pytest tests/test_migrations.py -m integration
+.venv/bin/pytest tests/test_profile_integration.py -m integration
+.venv/bin/pytest tests/test_skills_integration.py -m integration
+```
