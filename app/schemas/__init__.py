@@ -1,5 +1,6 @@
 """API schemas package."""
 
+from app.schemas.goal import GoalCreate, GoalEnvelope, GoalRead, GoalsEnvelope
 from app.schemas.profile import (
     ProfileEnvelope,
     ProfileRead,
@@ -18,6 +19,10 @@ from app.schemas.skill import (
 )
 
 __all__ = [
+    "GoalCreate",
+    "GoalEnvelope",
+    "GoalRead",
+    "GoalsEnvelope",
     "ProfileEnvelope",
     "ProfileRead",
     "ProfileUpdate",
