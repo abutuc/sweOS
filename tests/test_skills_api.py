@@ -339,3 +339,41 @@ def test_put_my_skills_creates_and_updates_user_skills(monkeypatch):
     )
     assert created_user_skill.user_id == user_id
     assert created_user_skill.self_assessed_level == ProficiencyLevel.intermediate
+
+
+def test_put_my_skills_rejects_duplicate_skill_ids(monkeypatch):
+    user_id = uuid.uuid4()
+    fake_session = _FakeUserSkillSession([])
+
+    def fake_get_or_create_default_user(_db):
+        return SimpleNamespace(id=user_id)
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr(skills_api, "get_or_create_default_user", fake_get_or_create_default_user)
+    app.dependency_overrides[get_db_session] = override_get_db_session
+
+    duplicate_skill_id = uuid.uuid4()
+
+    with TestClient(app) as client:
+        response = client.put(
+            "/api/v1/skills/me",
+            json={
+                "skills": [
+                    {
+                        "skillId": str(duplicate_skill_id),
+                        "selfAssessedLevel": "advanced",
+                    },
+                    {
+                        "skillId": str(duplicate_skill_id),
+                        "selfAssessedLevel": "intermediate",
+                    },
+                ]
+            },
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 422
+    assert fake_session.committed is False
