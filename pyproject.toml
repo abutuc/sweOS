@@ -37,3 +37,6 @@ testpaths = ["tests"]
 markers = [
   "integration: tests that require a running Postgres database",
 ]
+filterwarnings = [
+  "ignore::pydantic.warnings.UnsupportedFieldAttributeWarning",
+]
