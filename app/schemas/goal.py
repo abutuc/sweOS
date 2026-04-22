@@ -18,6 +18,10 @@ class GoalCreate(GoalBase):
     pass
 
 
+class GoalUpdate(GoalBase):
+    pass
+
+
 class GoalRead(GoalBase):
     model_config = ConfigDict(from_attributes=True)
 
@@ -31,3 +35,11 @@ class GoalsEnvelope(ApiSchema):
 
 class GoalEnvelope(ApiSchema):
     data: GoalRead
+
+
+class GoalDeleteResult(ApiSchema):
+    deleted: bool
+
+
+class GoalDeleteEnvelope(ApiSchema):
+    data: GoalDeleteResult

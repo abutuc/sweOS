@@ -7,7 +7,15 @@ from app.schemas.auth import (
     AuthResponseData,
     AuthUser,
 )
-from app.schemas.goal import GoalCreate, GoalEnvelope, GoalRead, GoalsEnvelope
+from app.schemas.goal import (
+    GoalCreate,
+    GoalDeleteEnvelope,
+    GoalDeleteResult,
+    GoalEnvelope,
+    GoalRead,
+    GoalUpdate,
+    GoalsEnvelope,
+)
 from app.schemas.profile import (
     ProfileEnvelope,
     ProfileRead,
@@ -32,8 +40,11 @@ __all__ = [
     "AuthResponseData",
     "AuthUser",
     "GoalCreate",
+    "GoalDeleteEnvelope",
+    "GoalDeleteResult",
     "GoalEnvelope",
     "GoalRead",
+    "GoalUpdate",
     "GoalsEnvelope",
     "ProfileEnvelope",
     "ProfileRead",
