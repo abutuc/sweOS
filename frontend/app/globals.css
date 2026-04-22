@@ -183,6 +183,30 @@ a {
   border: 1px solid var(--line);
 }
 
+.goal-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.goal-card {
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.goal-card p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.goal-card-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 @media (max-width: 880px) {
   .workspace-grid {
     grid-template-columns: 1fr;

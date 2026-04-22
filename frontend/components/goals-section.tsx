@@ -1,16 +1,55 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+import { api, type Goal } from "@/lib/api";
+
 type GoalsSectionProps = {
   className?: string;
 };
 
 export function GoalsSection({ className }: GoalsSectionProps) {
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    void api
+      .getGoals()
+      .then((response) => {
+        if (active) {
+          setGoals(response.data);
+          setError(null);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setError("Goals could not be loaded.");
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className={className}>
       <div className="section-heading">
         <p className="section-kicker">Goals</p>
         <h2>Convert intention into concrete milestones.</h2>
       </div>
+
+      <p className="section-status">
+        {isLoading ? "Loading goals..." : error ?? `${goals.length} goal${goals.length === 1 ? "" : "s"} loaded`}
+      </p>
 
       <div className="field-grid">
         <label className="field">
@@ -49,6 +88,18 @@ export function GoalsSection({ className }: GoalsSectionProps) {
         <button className="primary-button" type="button">
           Add goal
         </button>
+      </div>
+
+      <div className="goal-list">
+        {goals.map((goal) => (
+          <article className="goal-card" key={goal.id}>
+            <div className="goal-card-topline">
+              <strong>{goal.title}</strong>
+              <span>Priority {goal.priority}</span>
+            </div>
+            <p>{goal.description ?? "No description yet."}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
