@@ -1,3 +1,22 @@
+:root {
+  --bg: #f5efe1;
+  --surface: rgba(255, 252, 245, 0.86);
+  --surface-strong: #fffaf0;
+  --ink: #18261d;
+  --muted: #58665d;
+  --line: rgba(24, 38, 29, 0.12);
+  --accent: #c95a2b;
+  --accent-deep: #8f3412;
+  --highlight: #ead7a1;
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --shadow: 0 24px 80px rgba(74, 41, 17, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
 html,
 body {
   margin: 0;
@@ -6,4 +25,22 @@ body {
 
 body {
   min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(201, 90, 43, 0.22), transparent 24%),
+    radial-gradient(circle at top right, rgba(234, 215, 161, 0.45), transparent 26%),
+    linear-gradient(180deg, #faf5ea 0%, var(--bg) 50%, #efe4cf 100%);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
