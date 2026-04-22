@@ -35,6 +35,12 @@ To run a smaller slice while iterating:
 .venv/bin/pytest tests/test_bootstrap.py
 ```
 
+To surface current schema warnings explicitly during API test cleanup:
+
+```bash
+.venv/bin/pytest tests/test_profile_api.py tests/test_skills_api.py -W default
+```
+
 ### Bootstrap Utilities
 
 After the editable install, these commands are available:
