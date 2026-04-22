@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 revision: str = "20260422_0001"
@@ -18,7 +19,29 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    pass
+    proficiency_level = sa.Enum(
+        "none",
+        "beginner",
+        "elementary",
+        "intermediate",
+        "advanced",
+        "expert",
+        name="proficiency_level",
+    )
+    proficiency_level.create(op.get_bind(), checkfirst=True)
+
+    op.create_table(
+        "users",
+        sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("email", sa.String(), nullable=False),
+        sa.Column("password_hash", sa.String(), nullable=False),
+        sa.Column("full_name", sa.String(), nullable=True),
+        sa.Column("timezone", sa.String(), nullable=False, server_default="Europe/Lisbon"),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("email"),
+    )
 
 
 def downgrade() -> None:
