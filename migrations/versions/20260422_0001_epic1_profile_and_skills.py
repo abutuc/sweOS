@@ -19,7 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    proficiency_level = sa.Enum(
+    proficiency_level = postgresql.ENUM(
         "none",
         "beginner",
         "elementary",
@@ -27,6 +27,7 @@ def upgrade() -> None:
         "advanced",
         "expert",
         name="proficiency_level",
+        create_type=False,
     )
     proficiency_level.create(op.get_bind(), checkfirst=True)
 
@@ -80,8 +81,8 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("skill_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("self_assessed_level", sa.Enum(name="proficiency_level", create_type=False), nullable=False, server_default="none"),
-        sa.Column("measured_level", sa.Enum(name="proficiency_level", create_type=False), nullable=True),
+        sa.Column("self_assessed_level", proficiency_level, nullable=False, server_default="none"),
+        sa.Column("measured_level", proficiency_level, nullable=True),
         sa.Column("confidence_score", sa.Numeric(5, 2), nullable=True),
         sa.Column("evidence_count", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("last_evaluated_at", sa.DateTime(timezone=True), nullable=True),
@@ -99,4 +100,4 @@ def downgrade() -> None:
     op.drop_table("skills")
     op.drop_table("user_profiles")
     op.drop_table("users")
-    sa.Enum(name="proficiency_level").drop(op.get_bind(), checkfirst=True)
+    postgresql.ENUM(name="proficiency_level", create_type=False).drop(op.get_bind(), checkfirst=True)

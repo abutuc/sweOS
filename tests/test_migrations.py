@@ -34,7 +34,7 @@ def test_alembic_downgrade_removes_epic1_tables(integration_engine):
     inspector = inspect(integration_engine)
     table_names = set(inspector.get_table_names())
 
-    assert "alembic_version" not in table_names
+    assert "alembic_version" in table_names
     assert "users" not in table_names
     assert "user_profiles" not in table_names
     assert "skills" not in table_names
