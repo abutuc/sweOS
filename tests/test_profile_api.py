@@ -71,7 +71,9 @@ def test_get_profile_returns_empty_profile_shape(monkeypatch):
             "bio": None,
             "yearsExperience": "0.0",
             "currentRole": None,
+            "stack": [],
             "targetRole": None,
+            "targetRoles": [],
             "targetSeniority": None,
             "preferredLocations": [],
             "preferredWorkModes": [],
@@ -103,7 +105,9 @@ def test_put_profile_creates_profile(monkeypatch):
         "bio": "Backend-focused engineer",
         "years_experience": "2.0",
         "current_role": "Engineer",
+        "stack": ["Python", "PostgreSQL"],
         "target_role": "Backend Engineer",
+        "target_roles": ["Backend Engineer", "AI Engineer"],
         "target_seniority": "mid",
         "preferred_locations": ["Portugal", "Remote EU"],
         "preferred_work_modes": ["remote"],
@@ -123,7 +127,9 @@ def test_put_profile_creates_profile(monkeypatch):
     assert fake_session.profile is not None
     assert str(fake_session.profile.user_id) == str(default_user_id)
     assert fake_session.profile.headline == payload["headline"]
+    assert fake_session.profile.stack == payload["stack"]
     assert fake_session.profile.target_role == payload["target_role"]
+    assert fake_session.profile.target_roles == payload["target_roles"]
     assert fake_session.profile.preferred_locations == payload["preferred_locations"]
 
 
