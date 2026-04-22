@@ -14,6 +14,7 @@ export function ProfileSection({ className }: ProfileSectionProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -52,9 +53,27 @@ export function ProfileSection({ className }: ProfileSectionProps) {
       return;
     }
 
+    const minSalary = profile.salaryExpectationMin;
+    const maxSalary = profile.salaryExpectationMax;
+
+    if (
+      minSalary !== null &&
+      maxSalary !== null &&
+      Number(minSalary) > Number(maxSalary)
+    ) {
+      setValidationError("Minimum salary must be less than or equal to maximum salary.");
+      return;
+    }
+
+    if (profile.yearsExperience && Number(profile.yearsExperience) < 0) {
+      setValidationError("Years of experience must be zero or higher.");
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
     setNotice(null);
+    setValidationError(null);
 
     try {
       await api.saveProfile({
@@ -83,7 +102,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
       </div>
 
       <p className="section-status">
-        {isLoading ? "Loading profile..." : error ?? notice ?? "Profile synced with API"}
+        {isLoading
+          ? "Loading profile..."
+          : validationError ?? error ?? notice ?? "Profile synced with API"}
       </p>
 
       <div className="field-grid">
@@ -158,6 +179,34 @@ export function ProfileSection({ className }: ProfileSectionProps) {
             value={profile?.summary ?? ""}
             onChange={(event) => updateProfileField("summary", event.target.value)}
             placeholder="What should sweOS know about your direction?"
+          />
+        </label>
+        <label className="field">
+          <span>Salary expectation min</span>
+          <input
+            value={profile?.salaryExpectationMin ?? ""}
+            onChange={(event) =>
+              updateProfileField(
+                "salaryExpectationMin",
+                event.target.value ? Number(event.target.value) : null,
+              )
+            }
+            placeholder="40000"
+            type="number"
+          />
+        </label>
+        <label className="field">
+          <span>Salary expectation max</span>
+          <input
+            value={profile?.salaryExpectationMax ?? ""}
+            onChange={(event) =>
+              updateProfileField(
+                "salaryExpectationMax",
+                event.target.value ? Number(event.target.value) : null,
+              )
+            }
+            placeholder="55000"
+            type="number"
           />
         </label>
       </div>
