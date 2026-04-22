@@ -12,8 +12,14 @@ class _FakeGoalQuery:
     def __init__(self, goals):
         self._goals = goals
 
-    def filter(self, predicate):
-        return _FakeGoalQuery([goal for goal in self._goals if predicate.compare(goal)])
+    def filter(self, *predicates):
+        return _FakeGoalQuery(
+            [
+                goal
+                for goal in self._goals
+                if all(predicate.compare(goal) for predicate in predicates)
+            ]
+        )
 
     def all(self):
         return self._goals
