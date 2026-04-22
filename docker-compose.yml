@@ -16,5 +16,31 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: sweos-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/sweos
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sweos-web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
 volumes:
   postgres_data:
