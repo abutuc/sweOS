@@ -45,3 +45,17 @@ sweos-seed-default-user
 sweos-seed-skill-catalog
 sweos-bootstrap-epic1
 ```
+
+### Migrations
+
+Apply the current schema revision:
+
+```bash
+.venv/bin/alembic upgrade head
+```
+
+Roll the schema back one revision:
+
+```bash
+.venv/bin/alembic downgrade -1
+```
