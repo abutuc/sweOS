@@ -1,11 +1,14 @@
 import uuid
 
+from pydantic import ConfigDict
 from pydantic import EmailStr, Field
 
 from app.schemas.base import ApiSchema
 
 
 class AuthUser(ApiSchema):
+    model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID
     email: EmailStr
     full_name: str | None = None
