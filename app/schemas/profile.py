@@ -2,7 +2,7 @@ import uuid
 from typing import Annotated
 from decimal import Decimal
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 
 from app.schemas.base import ApiSchema
 
@@ -22,6 +22,16 @@ class ProfileBase(ApiSchema):
     salary_expectation_min: Annotated[int | None, Field(default=None, ge=0)] = None
     salary_expectation_max: Annotated[int | None, Field(default=None, ge=0)] = None
     summary: str | None = None
+
+    @model_validator(mode="after")
+    def validate_salary_range(self):
+        if (
+            self.salary_expectation_min is not None
+            and self.salary_expectation_max is not None
+            and self.salary_expectation_min > self.salary_expectation_max
+        ):
+            raise ValueError("salaryExpectationMin must be less than or equal to salaryExpectationMax")
+        return self
 
 
 class ProfileUpdate(ProfileBase):
