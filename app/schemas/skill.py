@@ -2,12 +2,13 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 
 from app.models.user_skill import ProficiencyLevel
+from app.schemas.base import ApiSchema
 
 
-class SkillCatalogItem(BaseModel):
+class SkillCatalogItem(ApiSchema):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -17,11 +18,11 @@ class SkillCatalogItem(BaseModel):
     description: str | None = None
 
 
-class SkillCatalogEnvelope(BaseModel):
+class SkillCatalogEnvelope(ApiSchema):
     data: list[SkillCatalogItem]
 
 
-class UserSkillRead(BaseModel):
+class UserSkillRead(ApiSchema):
     skill_id: uuid.UUID
     skill_slug: str
     skill_name: str
@@ -33,22 +34,22 @@ class UserSkillRead(BaseModel):
     last_evaluated_at: datetime | None = None
 
 
-class UserSkillsEnvelope(BaseModel):
+class UserSkillsEnvelope(ApiSchema):
     data: list[UserSkillRead]
 
 
-class UserSkillUpsertItem(BaseModel):
+class UserSkillUpsertItem(ApiSchema):
     skill_id: uuid.UUID
     self_assessed_level: ProficiencyLevel
 
 
-class UserSkillsUpsertRequest(BaseModel):
+class UserSkillsUpsertRequest(ApiSchema):
     skills: list[UserSkillUpsertItem]
 
 
-class UserSkillsUpsertResult(BaseModel):
+class UserSkillsUpsertResult(ApiSchema):
     updated_count: int
 
 
-class UserSkillsUpsertEnvelope(BaseModel):
+class UserSkillsUpsertEnvelope(ApiSchema):
     data: UserSkillsUpsertResult
