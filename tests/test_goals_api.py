@@ -133,3 +133,33 @@ def test_create_goal_persists_goal(monkeypatch):
     assert response.json()["data"]["title"] == "Land backend role"
     assert response.json()["data"]["userId"] == str(user_id)
     assert fake_session.committed is True
+
+
+def test_create_goal_rejects_invalid_priority(monkeypatch):
+    user_id = uuid.uuid4()
+    fake_session = _FakeGoalSession()
+
+    def fake_get_or_create_default_user(_db):
+        return SimpleNamespace(id=user_id)
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr("app.api.goals.get_or_create_default_user", fake_get_or_create_default_user)
+    monkeypatch.setattr("app.api.goals.Goal", _FakeGoalModel)
+    app.dependency_overrides[get_db_session] = override_get_db_session
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/goals",
+            json={
+                "title": "Stretch goal",
+                "priority": 7,
+                "status": "active",
+            },
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 422
+    assert fake_session.committed is False
