@@ -264,15 +264,15 @@ def test_get_my_skills_returns_structured_skill_entries(monkeypatch):
     assert response.json() == {
         "data": [
             {
-                "skill_id": str(skill_id),
-                "skill_slug": "python",
-                "skill_name": "Python",
+                "skillId": str(skill_id),
+                "skillSlug": "python",
+                "skillName": "Python",
                 "category": "language",
-                "self_assessed_level": "advanced",
-                "measured_level": "intermediate",
-                "confidence_score": "0.74",
-                "evidence_count": 8,
-                "last_evaluated_at": "2026-04-22T10:00:00Z",
+                "selfAssessedLevel": "advanced",
+                "measuredLevel": "intermediate",
+                "confidenceScore": "0.74",
+                "evidenceCount": 8,
+                "lastEvaluatedAt": "2026-04-22T10:00:00Z",
             }
         ]
     }
@@ -331,7 +331,7 @@ def test_put_my_skills_creates_and_updates_user_skills(monkeypatch):
     app.dependency_overrides.clear()
 
     assert response.status_code == 200
-    assert response.json() == {"data": {"updated_count": 2}}
+    assert response.json() == {"data": {"updatedCount": 2}}
     assert fake_session.committed is True
     assert existing_user_skill.self_assessed_level == ProficiencyLevel.advanced
     created_user_skill = next(
