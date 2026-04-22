@@ -52,7 +52,7 @@ def upsert_profile(
     user = get_or_create_default_user(db)
     profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).one_or_none()
 
-    profile_data = payload.model_dump()
+    profile_data = payload.model_dump(by_alias=False)
     if profile is None:
         profile = UserProfile(user_id=user.id, **profile_data)
         db.add(profile)
