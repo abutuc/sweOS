@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_db_session
-from app.core.bootstrap import get_or_create_default_user
+from app.api.dependencies import get_db_session, require_current_user
 from app.models.skill import Skill
+from app.models.user import User
 from app.models.user_skill import UserSkill
 from app.schemas.skill import (
     SkillCatalogEnvelope,
@@ -39,8 +39,10 @@ def get_skill_catalog(
 
 
 @router.get("/me", response_model=UserSkillsEnvelope)
-def get_my_skills(db: Session = Depends(get_db_session)) -> UserSkillsEnvelope:
-    user = get_or_create_default_user(db)
+def get_my_skills(
+    db: Session = Depends(get_db_session),
+    user: User = Depends(require_current_user),
+) -> UserSkillsEnvelope:
     user_skills = db.query(UserSkill).filter(UserSkill.user_id == user.id).all()
 
     items = [
@@ -64,8 +66,8 @@ def get_my_skills(db: Session = Depends(get_db_session)) -> UserSkillsEnvelope:
 def upsert_my_skills(
     payload: UserSkillsUpsertRequest,
     db: Session = Depends(get_db_session),
+    user: User = Depends(require_current_user),
 ) -> UserSkillsUpsertEnvelope:
-    user = get_or_create_default_user(db)
     updated_count = 0
 
     for item in payload.skills:
