@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
-from app.api.dependencies import get_db_session
+from app.api.dependencies import get_db_session, require_current_user
 from app.main import app
 
 
@@ -17,6 +17,11 @@ class _FakeGoalQuery:
 
     def all(self):
         return self._goals
+
+    def one_or_none(self):
+        if not self._goals:
+            return None
+        return self._goals[0]
 
 
 class _Predicate:
@@ -62,8 +67,18 @@ class _FakeGoalSession:
     def refresh(self, _obj):
         return None
 
+    def delete(self, obj):
+        self.goals = [goal for goal in self.goals if goal is not obj]
+
     def close(self):
         return None
+
+
+def _override_current_user(user_id: uuid.UUID):
+    def _override():
+        return SimpleNamespace(id=user_id)
+
+    return _override
 
 
 def test_get_goals_returns_user_goals(monkeypatch):
@@ -82,15 +97,12 @@ def test_get_goals_returns_user_goals(monkeypatch):
         ]
     )
 
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=user_id)
-
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr("app.api.goals.get_or_create_default_user", fake_get_or_create_default_user)
     monkeypatch.setattr("app.api.goals.Goal", _FakeGoalModel)
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
     with TestClient(app) as client:
         response = client.get("/api/v1/goals")
@@ -105,15 +117,12 @@ def test_create_goal_persists_goal(monkeypatch):
     user_id = uuid.uuid4()
     fake_session = _FakeGoalSession()
 
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=user_id)
-
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr("app.api.goals.get_or_create_default_user", fake_get_or_create_default_user)
     monkeypatch.setattr("app.api.goals.Goal", _FakeGoalModel)
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
     with TestClient(app) as client:
         response = client.post(
@@ -139,15 +148,12 @@ def test_create_goal_rejects_invalid_priority(monkeypatch):
     user_id = uuid.uuid4()
     fake_session = _FakeGoalSession()
 
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=user_id)
-
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr("app.api.goals.get_or_create_default_user", fake_get_or_create_default_user)
     monkeypatch.setattr("app.api.goals.Goal", _FakeGoalModel)
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
     with TestClient(app) as client:
         response = client.post(
@@ -163,3 +169,79 @@ def test_create_goal_rejects_invalid_priority(monkeypatch):
 
     assert response.status_code == 422
     assert fake_session.committed is False
+
+
+def test_update_goal_persists_changes(monkeypatch):
+    user_id = uuid.uuid4()
+    goal_id = uuid.uuid4()
+    fake_session = _FakeGoalSession(
+        [
+            SimpleNamespace(
+                id=goal_id,
+                user_id=user_id,
+                title="Land backend role",
+                description="Initial plan",
+                target_date=date(2026, 8, 1),
+                priority=2,
+                status="active",
+            )
+        ]
+    )
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr("app.api.goals.Goal", _FakeGoalModel)
+    app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
+
+    with TestClient(app) as client:
+        response = client.put(
+            f"/api/v1/goals/{goal_id}",
+            json={
+                "title": "Land senior backend role",
+                "description": "Updated plan",
+                "targetDate": "2026-09-01",
+                "priority": 1,
+                "status": "active",
+            },
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["data"]["title"] == "Land senior backend role"
+    assert fake_session.goals[0].priority == 1
+    assert fake_session.committed is True
+
+
+def test_delete_goal_removes_goal(monkeypatch):
+    user_id = uuid.uuid4()
+    goal_id = uuid.uuid4()
+    fake_goal = SimpleNamespace(
+        id=goal_id,
+        user_id=user_id,
+        title="Land backend role",
+        description="Initial plan",
+        target_date=None,
+        priority=2,
+        status="active",
+    )
+    fake_session = _FakeGoalSession([fake_goal])
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr("app.api.goals.Goal", _FakeGoalModel)
+    app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
+
+    with TestClient(app) as client:
+        response = client.delete(f"/api/v1/goals/{goal_id}")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {"data": {"deleted": True}}
+    assert fake_session.goals == []
+    assert fake_session.committed is True

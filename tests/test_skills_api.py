@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from fastapi.testclient import TestClient
 
 from app.api import skills as skills_api
-from app.api.dependencies import get_db_session
+from app.api.dependencies import get_db_session, require_current_user
 from app.main import app
 from app.models.user_skill import ProficiencyLevel
 
@@ -257,7 +257,14 @@ class _FakeUserSkillSession:
         return None
 
 
-def test_get_my_skills_returns_structured_skill_entries(monkeypatch):
+def _override_current_user(user_id: uuid.UUID):
+    def _override():
+        return SimpleNamespace(id=user_id)
+
+    return _override
+
+
+def test_get_my_skills_returns_structured_skill_entries():
     user_id = uuid.uuid4()
     skill_id = uuid.uuid4()
     evaluated_at = datetime(2026, 4, 22, 10, 0, tzinfo=timezone.utc)
@@ -281,16 +288,13 @@ def test_get_my_skills_returns_structured_skill_entries(monkeypatch):
         ]
     )
 
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=user_id)
-
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr(skills_api, "get_or_create_default_user", fake_get_or_create_default_user)
     original_user_skill_model = skills_api.UserSkill
     skills_api.UserSkill = _FakeUserSkillModel
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
     with TestClient(app) as client:
         response = client.get("/api/v1/skills/me")
@@ -316,7 +320,7 @@ def test_get_my_skills_returns_structured_skill_entries(monkeypatch):
     }
 
 
-def test_put_my_skills_creates_and_updates_user_skills(monkeypatch):
+def test_put_my_skills_creates_and_updates_user_skills():
     user_id = uuid.uuid4()
     existing_skill_id = uuid.uuid4()
     new_skill_id = uuid.uuid4()
@@ -328,13 +332,9 @@ def test_put_my_skills_creates_and_updates_user_skills(monkeypatch):
     )
     fake_session = _FakeUserSkillSession([existing_user_skill])
 
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=user_id)
-
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr(skills_api, "get_or_create_default_user", fake_get_or_create_default_user)
     original_user_skill_model = skills_api.UserSkill
 
     class _FakeWritableUserSkillModel(_FakeUserSkillModel):
@@ -347,6 +347,7 @@ def test_put_my_skills_creates_and_updates_user_skills(monkeypatch):
 
     skills_api.UserSkill = _FakeWritableUserSkillModel
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
     with TestClient(app) as client:
         response = client.put(
@@ -379,18 +380,15 @@ def test_put_my_skills_creates_and_updates_user_skills(monkeypatch):
     assert created_user_skill.self_assessed_level == ProficiencyLevel.intermediate
 
 
-def test_put_my_skills_rejects_duplicate_skill_ids(monkeypatch):
+def test_put_my_skills_rejects_duplicate_skill_ids():
     user_id = uuid.uuid4()
     fake_session = _FakeUserSkillSession([])
-
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=user_id)
 
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr(skills_api, "get_or_create_default_user", fake_get_or_create_default_user)
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
     duplicate_skill_id = uuid.uuid4()
 

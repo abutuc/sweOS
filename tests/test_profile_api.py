@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
-from app.api.dependencies import get_db_session
+from app.api.dependencies import get_db_session, require_current_user
 from app.main import app
 
 
@@ -42,21 +42,22 @@ class _FakeSession:
         return None
 
 
-def test_get_profile_returns_empty_profile_shape(monkeypatch):
+def _override_current_user(user_id: uuid.UUID):
+    def _override():
+        return SimpleNamespace(id=user_id)
+
+    return _override
+
+
+def test_get_profile_returns_empty_profile_shape():
     default_user_id = uuid.uuid4()
     fake_session = _FakeSession()
-
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=default_user_id)
 
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr(
-        "app.api.profile.get_or_create_default_user",
-        fake_get_or_create_default_user,
-    )
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(default_user_id)
 
     with TestClient(app) as client:
         response = client.get("/api/v1/profile")
@@ -84,21 +85,15 @@ def test_get_profile_returns_empty_profile_shape(monkeypatch):
     }
 
 
-def test_put_profile_creates_profile(monkeypatch):
+def test_put_profile_creates_profile():
     default_user_id = uuid.uuid4()
     fake_session = _FakeSession()
-
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=default_user_id)
 
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr(
-        "app.api.profile.get_or_create_default_user",
-        fake_get_or_create_default_user,
-    )
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(default_user_id)
 
     payload = {
         "headline": "Software Engineer",
@@ -133,21 +128,15 @@ def test_put_profile_creates_profile(monkeypatch):
     assert fake_session.profile.preferred_locations == payload["preferred_locations"]
 
 
-def test_put_profile_rejects_invalid_salary_range(monkeypatch):
+def test_put_profile_rejects_invalid_salary_range():
     default_user_id = uuid.uuid4()
     fake_session = _FakeSession()
-
-    def fake_get_or_create_default_user(_db):
-        return SimpleNamespace(id=default_user_id)
 
     def override_get_db_session():
         yield fake_session
 
-    monkeypatch.setattr(
-        "app.api.profile.get_or_create_default_user",
-        fake_get_or_create_default_user,
-    )
     app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(default_user_id)
 
     with TestClient(app) as client:
         response = client.put(
