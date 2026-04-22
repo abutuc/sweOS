@@ -22,14 +22,9 @@ export function CompanionApp() {
     }
 
     void api
-      .getProfile()
-      .then(() => {
-        const payload = JSON.parse(atob(token.split(".")[1] ?? ""));
-        setUser({
-          id: payload.sub as string,
-          email: "authenticated@sweos.local",
-          fullName: null,
-        });
+      .getMe()
+      .then((response) => {
+        setUser(response.data);
       })
       .catch((error) => {
         if (error instanceof ApiError && error.status === 401) {

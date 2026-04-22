@@ -116,6 +116,7 @@ export const api = {
     setStoredToken(response.data.token);
     return response;
   },
+  getMe: () => request<{ data: AuthUser }>("/auth/me"),
   getProfile: () => request<{ data: Profile }>("/profile"),
   saveProfile: (payload: Partial<Profile>) =>
     request<{ data: { updated: boolean } }>("/profile", {

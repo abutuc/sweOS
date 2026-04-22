@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_db_session
+from app.api.dependencies import get_db_session, require_current_user
 from app.core.security import hash_password, verify_password
 from app.core.tokens import create_access_token
 from app.models.user import User
@@ -11,6 +11,7 @@ from app.schemas.auth import (
     AuthRegisterRequest,
     AuthResponseData,
     AuthUser,
+    AuthUserEnvelope,
 )
 
 
@@ -60,3 +61,8 @@ def login(
             token=token,
         )
     )
+
+
+@router.get("/me", response_model=AuthUserEnvelope)
+def get_me(user: User = Depends(require_current_user)) -> AuthUserEnvelope:
+    return AuthUserEnvelope(data=AuthUser.model_validate(user))

@@ -32,3 +32,7 @@ class AuthResponseData(ApiSchema):
 
 class AuthEnvelope(ApiSchema):
     data: AuthResponseData
+
+
+class AuthUserEnvelope(ApiSchema):
+    data: AuthUser

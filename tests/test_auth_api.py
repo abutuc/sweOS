@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
-from app.api.dependencies import get_db_session
+from app.api.dependencies import get_db_session, require_current_user
 from app.main import app
 
 
@@ -134,3 +134,27 @@ def test_profile_requires_bearer_token():
         response = client.get("/api/v1/profile")
 
     assert response.status_code == 401
+
+
+def test_get_me_returns_authenticated_user():
+    user = SimpleNamespace(
+        id=uuid.uuid4(),
+        email="andre@example.com",
+        full_name="Andre Butuc",
+    )
+
+    app.dependency_overrides[require_current_user] = lambda: user
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/auth/me")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "data": {
+            "id": str(user.id),
+            "email": "andre@example.com",
+            "fullName": "Andre Butuc",
+        }
+    }
