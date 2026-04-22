@@ -2,7 +2,6 @@ import pytest
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.bootstrap import get_or_create_default_user
 from app.models.user_profile import UserProfile
 from tests.migration_utils import upgrade_to_head
 
@@ -11,16 +10,17 @@ from tests.migration_utils import upgrade_to_head
 def test_get_profile_returns_persisted_profile(
     integration_client,
     db_session_factory,
+    authenticated_user,
+    auth_headers,
 ):
     settings = get_settings()
     upgrade_to_head(settings.database_url)
 
     db: Session = db_session_factory()
     try:
-        user = get_or_create_default_user(db)
         db.add(
             UserProfile(
-                user_id=user.id,
+                user_id=authenticated_user.id,
                 headline="Software Engineer",
                 stack=["Python", "PostgreSQL"],
                 target_role="Backend Engineer",
@@ -31,7 +31,7 @@ def test_get_profile_returns_persisted_profile(
     finally:
         db.close()
 
-    response = integration_client.get("/api/v1/profile")
+    response = integration_client.get("/api/v1/profile", headers=auth_headers)
 
     assert response.status_code == 200
     assert response.json()["data"]["headline"] == "Software Engineer"
@@ -41,12 +41,13 @@ def test_get_profile_returns_persisted_profile(
 
 
 @pytest.mark.integration
-def test_put_profile_persists_profile(integration_client, db_session_factory):
+def test_put_profile_persists_profile(integration_client, db_session_factory, authenticated_user, auth_headers):
     settings = get_settings()
     upgrade_to_head(settings.database_url)
 
     response = integration_client.put(
         "/api/v1/profile",
+        headers=auth_headers,
         json={
             "headline": "Platform Engineer",
             "stack": ["Python", "FastAPI"],
@@ -62,8 +63,7 @@ def test_put_profile_persists_profile(integration_client, db_session_factory):
 
     db: Session = db_session_factory()
     try:
-        user = get_or_create_default_user(db)
-        profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).one()
+        profile = db.query(UserProfile).filter(UserProfile.user_id == authenticated_user.id).one()
         assert profile.headline == "Platform Engineer"
         assert profile.stack == ["Python", "FastAPI"]
         assert profile.target_role == "AI Engineer"

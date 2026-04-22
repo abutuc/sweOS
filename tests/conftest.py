@@ -3,9 +3,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.core.config import get_settings
+from app.core.security import hash_password
+from app.core.tokens import create_access_token
 from app.api.dependencies import get_db_session
 from app.main import app
-from app.core.config import get_settings
+from app.models.user import User
 from tests.db_utils import is_database_available, reset_public_schema
 
 
@@ -46,3 +49,26 @@ def integration_client(db_session_factory):
     with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def authenticated_user(db_session_factory):
+    db = db_session_factory()
+    try:
+        user = User(
+            email="integration@example.com",
+            password_hash=hash_password("StrongPass1"),
+            full_name="Integration User",
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        yield user
+    finally:
+        db.close()
+
+
+@pytest.fixture
+def auth_headers(authenticated_user):
+    token = create_access_token(str(authenticated_user.id))
+    return {"Authorization": f"Bearer {token}"}
