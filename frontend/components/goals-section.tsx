@@ -14,6 +14,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [draft, setDraft] = useState({
     title: "",
     targetDate: "",
@@ -78,6 +79,57 @@ export function GoalsSection({ className }: GoalsSectionProps) {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleUpdateGoal = async (goalId: string) => {
+    const goal = goals.find((item) => item.id === goalId);
+    if (!goal) {
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      const response = await api.updateGoal(goalId, {
+        title: goal.title,
+        description: goal.description,
+        targetDate: goal.targetDate,
+        priority: goal.priority,
+        status: goal.status,
+      });
+      setGoals((current) => current.map((item) => (item.id === goalId ? response.data : item)));
+      setEditingGoalId(null);
+      setNotice("Goal updated.");
+    } catch {
+      setError("Goal could not be updated.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteGoal = async (goalId: string) => {
+    setIsSaving(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await api.deleteGoal(goalId);
+      setGoals((current) => current.filter((goal) => goal.id !== goalId));
+      setEditingGoalId((current) => (current === goalId ? null : current));
+      setNotice("Goal removed.");
+    } catch {
+      setError("Goal could not be deleted.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const updateGoalField = <K extends keyof Goal>(goalId: string, key: K, value: Goal[K]) => {
+    setGoals((current) =>
+      current.map((goal) => (goal.id === goalId ? { ...goal, [key]: value } : goal)),
+    );
   };
 
   return (
@@ -161,9 +213,103 @@ export function GoalsSection({ className }: GoalsSectionProps) {
           <article className="goal-card" key={goal.id}>
             <div className="goal-card-topline">
               <strong>{goal.title}</strong>
-              <span>Priority {goal.priority}</span>
+              <span>
+                {goal.status} · Priority {goal.priority}
+              </span>
             </div>
-            <p>{goal.description ?? "No description yet."}</p>
+            {editingGoalId === goal.id ? (
+              <div className="goal-editor">
+                <label className="field">
+                  <span>Title</span>
+                  <input
+                    value={goal.title}
+                    onChange={(event) => updateGoalField(goal.id, "title", event.target.value)}
+                  />
+                </label>
+                <label className="field">
+                  <span>Target date</span>
+                  <input
+                    value={goal.targetDate ?? ""}
+                    onChange={(event) => updateGoalField(goal.id, "targetDate", event.target.value || null)}
+                  />
+                </label>
+                <label className="field">
+                  <span>Priority</span>
+                  <select
+                    value={String(goal.priority)}
+                    onChange={(event) =>
+                      updateGoalField(goal.id, "priority", Number(event.target.value))
+                    }
+                  >
+                    <option value="1">1 - Critical</option>
+                    <option value="2">2 - High</option>
+                    <option value="3">3 - Medium</option>
+                    <option value="4">4 - Low</option>
+                    <option value="5">5 - Parking lot</option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Status</span>
+                  <select
+                    value={goal.status}
+                    onChange={(event) => updateGoalField(goal.id, "status", event.target.value)}
+                  >
+                    <option value="active">Active</option>
+                    <option value="paused">Paused</option>
+                    <option value="done">Done</option>
+                  </select>
+                </label>
+                <label className="field field-wide">
+                  <span>Description</span>
+                  <textarea
+                    rows={3}
+                    value={goal.description ?? ""}
+                    onChange={(event) =>
+                      updateGoalField(goal.id, "description", event.target.value || null)
+                    }
+                  />
+                </label>
+                <div className="goal-card-actions">
+                  <button
+                    className="ghost-button"
+                    type="button"
+                    onClick={() => setEditingGoalId(null)}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="ghost-button ghost-button-danger"
+                    type="button"
+                    onClick={() => handleDeleteGoal(goal.id)}
+                    disabled={isSaving}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    className="primary-button"
+                    type="button"
+                    onClick={() => handleUpdateGoal(goal.id)}
+                    disabled={isSaving || goal.title.trim().length === 0}
+                  >
+                    Save changes
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p>{goal.description ?? "No description yet."}</p>
+                <div className="goal-card-actions">
+                  <button
+                    className="ghost-button"
+                    type="button"
+                    onClick={() => setEditingGoalId(goal.id)}
+                  >
+                    Edit goal
+                  </button>
+                </div>
+              </>
+            )}
           </article>
         ))}
       </div>
