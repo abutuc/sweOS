@@ -14,6 +14,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -24,6 +25,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
           setCatalog(catalogResponse.data);
           setUserSkills(userSkillsResponse.data);
           setError(null);
+          setNotice(null);
         }
       })
       .catch(() => {
@@ -76,6 +78,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
+    setNotice(null);
 
     try {
       await api.saveUserSkills({
@@ -84,6 +87,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
           selfAssessedLevel: skill.selfAssessedLevel,
         })),
       });
+      setNotice("Skill levels saved.");
     } catch {
       setError("Skill levels could not be saved.");
     } finally {
@@ -101,7 +105,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
       <p className="section-status">
         {isLoading
           ? "Loading skills..."
-          : error ?? `${catalog.length} skills in catalog, ${userSkills.length} tracked`}
+          : error ?? notice ?? `${catalog.length} skills in catalog, ${userSkills.length} tracked`}
       </p>
 
       <div className="skill-stack">

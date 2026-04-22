@@ -13,6 +13,7 @@ export function ProfileSection({ className }: ProfileSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -23,6 +24,7 @@ export function ProfileSection({ className }: ProfileSectionProps) {
         if (active) {
           setProfile(response.data);
           setError(null);
+          setNotice(null);
         }
       })
       .catch(() => {
@@ -52,6 +54,7 @@ export function ProfileSection({ className }: ProfileSectionProps) {
 
     setIsSaving(true);
     setError(null);
+    setNotice(null);
 
     try {
       await api.saveProfile({
@@ -64,6 +67,7 @@ export function ProfileSection({ className }: ProfileSectionProps) {
         targetSeniority: profile.targetSeniority || null,
         summary: profile.summary || null,
       });
+      setNotice("Profile saved.");
     } catch {
       setError("Profile could not be saved.");
     } finally {
@@ -79,7 +83,7 @@ export function ProfileSection({ className }: ProfileSectionProps) {
       </div>
 
       <p className="section-status">
-        {isLoading ? "Loading profile..." : error ?? "Profile synced with API"}
+        {isLoading ? "Loading profile..." : error ?? notice ?? "Profile synced with API"}
       </p>
 
       <div className="field-grid">

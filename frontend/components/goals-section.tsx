@@ -13,6 +13,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [draft, setDraft] = useState({
     title: "",
     targetDate: "",
@@ -30,6 +31,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
         if (active) {
           setGoals(response.data);
           setError(null);
+          setNotice(null);
         }
       })
       .catch(() => {
@@ -51,6 +53,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
   const handleCreateGoal = async () => {
     setIsSaving(true);
     setError(null);
+    setNotice(null);
 
     try {
       const response = await api.createGoal({
@@ -69,6 +72,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
         status: "active",
         description: "",
       });
+      setNotice("Goal added.");
     } catch {
       setError("Goal could not be created.");
     } finally {
@@ -84,7 +88,9 @@ export function GoalsSection({ className }: GoalsSectionProps) {
       </div>
 
       <p className="section-status">
-        {isLoading ? "Loading goals..." : error ?? `${goals.length} goal${goals.length === 1 ? "" : "s"} loaded`}
+        {isLoading
+          ? "Loading goals..."
+          : error ?? notice ?? `${goals.length} goal${goals.length === 1 ? "" : "s"} loaded`}
       </p>
 
       <div className="field-grid">
