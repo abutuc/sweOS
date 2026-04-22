@@ -230,6 +230,56 @@ Bulk upsert.
 }
 ```
 
+### `GET /api/v1/goals`
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "title": "Land backend role",
+      "description": "Strengthen backend profile",
+      "targetDate": "2026-08-01",
+      "priority": 2,
+      "status": "active"
+    }
+  ]
+}
+```
+
+### `POST /api/v1/goals`
+
+#### Request
+
+```json
+{
+  "title": "Land backend role",
+  "description": "Strengthen backend profile",
+  "targetDate": "2026-08-01",
+  "priority": 2,
+  "status": "active"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "userId": "uuid",
+    "title": "Land backend role",
+    "description": "Strengthen backend profile",
+    "targetDate": "2026-08-01",
+    "priority": 2,
+    "status": "active"
+  }
+}
+```
+
 ## 2.4 Exercises
 
 ### `POST /api/v1/exercises/generate`
