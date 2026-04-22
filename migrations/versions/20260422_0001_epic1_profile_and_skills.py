@@ -96,8 +96,24 @@ def upgrade() -> None:
         sa.UniqueConstraint("user_id", "skill_id", name="uq_user_skills_user_id_skill_id"),
     )
 
+    op.create_table(
+        "goals",
+        sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("title", sa.String(), nullable=False),
+        sa.Column("description", sa.Text(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.Column("priority", sa.Integer(), nullable=False, server_default="3"),
+        sa.Column("status", sa.String(), nullable=False, server_default="active"),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+        sa.PrimaryKeyConstraint("id"),
+    )
+
 
 def downgrade() -> None:
+    op.drop_table("goals")
     op.drop_table("user_skills")
     op.drop_table("skills")
     op.drop_table("user_profiles")
