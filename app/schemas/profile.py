@@ -1,10 +1,12 @@
 import uuid
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+
+from app.schemas.base import ApiSchema
 
 
-class ProfileBase(BaseModel):
+class ProfileBase(ApiSchema):
     headline: str | None = None
     bio: str | None = None
     years_experience: Decimal | None = Field(default=None, ge=0, max_digits=4, decimal_places=1)
@@ -28,13 +30,13 @@ class ProfileRead(ProfileBase):
     user_id: uuid.UUID
 
 
-class ProfileEnvelope(BaseModel):
+class ProfileEnvelope(ApiSchema):
     data: ProfileRead
 
 
-class ProfileUpdateResult(BaseModel):
+class ProfileUpdateResult(ApiSchema):
     updated: bool
 
 
-class ProfileUpdateEnvelope(BaseModel):
+class ProfileUpdateEnvelope(ApiSchema):
     data: ProfileUpdateResult
