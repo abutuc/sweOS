@@ -118,6 +118,12 @@ a {
   letter-spacing: 0.18em;
 }
 
+.section-status {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .field-grid {
   display: grid;
   gap: 14px;
