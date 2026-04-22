@@ -10,6 +10,7 @@ from app.api.dependencies import get_db_session
 from app.main import app
 from app.models.user import User
 from tests.db_utils import is_database_available, reset_public_schema
+from tests.migration_utils import upgrade_to_head
 
 
 @pytest.fixture(scope="session")
@@ -53,6 +54,9 @@ def integration_client(db_session_factory):
 
 @pytest.fixture
 def authenticated_user(db_session_factory):
+    settings = get_settings()
+    upgrade_to_head(settings.database_url)
+
     db = db_session_factory()
     try:
         user = User(

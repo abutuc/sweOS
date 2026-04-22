@@ -41,6 +41,7 @@ class _FakeColumn:
 
 
 class _FakeGoalModel:
+    id = _FakeColumn("id")
     user_id = _FakeColumn("user_id")
 
     def __init__(self, user_id, **kwargs):
