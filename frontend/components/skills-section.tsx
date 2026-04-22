@@ -11,6 +11,8 @@ type SkillsSectionProps = {
 export function SkillsSection({ className }: SkillsSectionProps) {
   const [catalog, setCatalog] = useState<SkillCatalogItem[]>([]);
   const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,6 +47,16 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   }, []);
 
   const trackedSkillIds = new Set(userSkills.map((skill) => skill.skillId));
+  const categories = ["all", ...new Set(catalog.map((skill) => skill.category))];
+  const visibleCatalog = catalog.filter((skill) => {
+    const matchesCategory = category === "all" || skill.category === category;
+    const matchesSearch =
+      search.trim().length === 0 ||
+      skill.name.toLowerCase().includes(search.toLowerCase()) ||
+      skill.slug.toLowerCase().includes(search.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
 
   const updateSkillLevel = (skillId: string, level: string) => {
     setUserSkills((current) =>
@@ -111,18 +123,36 @@ export function SkillsSection({ className }: SkillsSectionProps) {
       <div className="skill-stack">
         <div className="skill-pane">
           <h3>Catalog</h3>
+          <div className="skill-filter-row">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search skills"
+            />
+            <select value={category} onChange={(event) => setCategory(event.target.value)}>
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item === "all" ? "All categories" : item}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="skill-chip-grid">
-            {catalog.slice(0, 8).map((skill) => (
+            {visibleCatalog.map((skill) => (
               <button
-                className="skill-chip"
+                className={`skill-chip ${trackedSkillIds.has(skill.id) ? "skill-chip-active" : ""}`}
                 key={skill.id}
                 type="button"
                 onClick={() => addSkillToTrackedList(skill)}
+                disabled={trackedSkillIds.has(skill.id)}
               >
                 {skill.name}
               </button>
             ))}
           </div>
+          {visibleCatalog.length === 0 ? (
+            <p className="empty-state">No catalog skills match this filter.</p>
+          ) : null}
         </div>
         <div className="skill-pane">
           <h3>My levels</h3>
@@ -143,6 +173,9 @@ export function SkillsSection({ className }: SkillsSectionProps) {
               </label>
             ))}
           </div>
+          {userSkills.length === 0 ? (
+            <p className="empty-state">Add skills from the catalog to start tracking your level.</p>
+          ) : null}
         </div>
       </div>
 
