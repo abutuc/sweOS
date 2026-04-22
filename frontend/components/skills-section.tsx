@@ -13,6 +13,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -41,6 +42,55 @@ export function SkillsSection({ className }: SkillsSectionProps) {
     };
   }, []);
 
+  const trackedSkillIds = new Set(userSkills.map((skill) => skill.skillId));
+
+  const updateSkillLevel = (skillId: string, level: string) => {
+    setUserSkills((current) =>
+      current.map((skill) =>
+        skill.skillId === skillId ? { ...skill, selfAssessedLevel: level } : skill,
+      ),
+    );
+  };
+
+  const addSkillToTrackedList = (skill: SkillCatalogItem) => {
+    if (trackedSkillIds.has(skill.id)) {
+      return;
+    }
+
+    setUserSkills((current) => [
+      ...current,
+      {
+        skillId: skill.id,
+        skillSlug: skill.slug,
+        skillName: skill.name,
+        category: skill.category,
+        selfAssessedLevel: "beginner",
+        measuredLevel: null,
+        confidenceScore: null,
+        evidenceCount: 0,
+        lastEvaluatedAt: null,
+      },
+    ]);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      await api.saveUserSkills({
+        skills: userSkills.map((skill) => ({
+          skillId: skill.skillId,
+          selfAssessedLevel: skill.selfAssessedLevel,
+        })),
+      });
+    } catch {
+      setError("Skill levels could not be saved.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <section className={className}>
       <div className="section-heading">
@@ -59,9 +109,14 @@ export function SkillsSection({ className }: SkillsSectionProps) {
           <h3>Catalog</h3>
           <div className="skill-chip-grid">
             {catalog.slice(0, 8).map((skill) => (
-              <span className="skill-chip" key={skill.id}>
+              <button
+                className="skill-chip"
+                key={skill.id}
+                type="button"
+                onClick={() => addSkillToTrackedList(skill)}
+              >
                 {skill.name}
-              </span>
+              </button>
             ))}
           </div>
         </div>
@@ -71,7 +126,10 @@ export function SkillsSection({ className }: SkillsSectionProps) {
             {userSkills.map((skill) => (
               <label className="skill-level-row" key={skill.skillId}>
                 <span>{skill.skillName}</span>
-                <select value={skill.selfAssessedLevel} onChange={() => undefined}>
+                <select
+                  value={skill.selfAssessedLevel}
+                  onChange={(event) => updateSkillLevel(skill.skillId, event.target.value)}
+                >
                   <option value="beginner">Beginner</option>
                   <option value="elementary">Elementary</option>
                   <option value="intermediate">Intermediate</option>
@@ -85,8 +143,8 @@ export function SkillsSection({ className }: SkillsSectionProps) {
       </div>
 
       <div className="section-actions">
-        <button className="primary-button" type="button">
-          Save skill levels
+        <button className="primary-button" type="button" onClick={handleSave} disabled={isSaving}>
+          {isSaving ? "Saving..." : "Save skill levels"}
         </button>
       </div>
     </section>

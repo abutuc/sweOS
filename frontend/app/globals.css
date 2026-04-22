@@ -193,9 +193,11 @@ a {
 .skill-chip {
   padding: 8px 12px;
   border-radius: 999px;
+  border: 0;
   background: rgba(201, 90, 43, 0.12);
   color: var(--accent-deep);
   font-size: 0.9rem;
+  cursor: pointer;
 }
 
 .skill-level-list {
