@@ -47,7 +47,7 @@ class UserSkillsUpsertRequest(ApiSchema):
     skills: list[UserSkillUpsertItem]
 
     @model_validator(mode="after")
-    def validate_unique_skill_ids(self):
+    def validate_unique_skill_ids(self) -> "UserSkillsUpsertRequest":
         skill_ids = [item.skill_id for item in self.skills]
         if len(skill_ids) != len(set(skill_ids)):
             raise ValueError("skills must not contain duplicate skillId values")
