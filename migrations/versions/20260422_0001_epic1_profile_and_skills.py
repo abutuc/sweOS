@@ -95,4 +95,8 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    pass
+    op.drop_table("user_skills")
+    op.drop_table("skills")
+    op.drop_table("user_profiles")
+    op.drop_table("users")
+    sa.Enum(name="proficiency_level").drop(op.get_bind(), checkfirst=True)
