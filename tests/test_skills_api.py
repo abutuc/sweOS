@@ -177,6 +177,44 @@ def test_get_skills_catalog_filters_by_category():
     ]
 
 
+def test_get_skills_catalog_filters_by_search_term():
+    fake_session = _FakeSkillSession(
+        [
+            _FakeSkill(id=uuid.uuid4(), slug="python", name="Python", category="language"),
+            _FakeSkill(
+                id=uuid.uuid4(),
+                slug="postgresql",
+                name="PostgreSQL",
+                category="database",
+            ),
+        ]
+    )
+
+    def override_get_db_session():
+        yield fake_session
+
+    original_skill_model = skills_api.Skill
+    skills_api.Skill = _FakeSkillModel
+    app.dependency_overrides[get_db_session] = override_get_db_session
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/skills/catalog", params={"search": "post"})
+
+    skills_api.Skill = original_skill_model
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["data"] == [
+        {
+            "id": str(fake_session._skills[1].id),
+            "slug": "postgresql",
+            "name": "PostgreSQL",
+            "category": "database",
+            "description": None,
+        }
+    ]
+
+
 class _FakeUserSkillQuery:
     def __init__(self, user_skills):
         self._user_skills = user_skills
