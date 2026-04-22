@@ -22,7 +22,9 @@ def test_get_profile_returns_persisted_profile(
             UserProfile(
                 user_id=user.id,
                 headline="Software Engineer",
+                stack=["Python", "PostgreSQL"],
                 target_role="Backend Engineer",
+                target_roles=["Backend Engineer", "AI Engineer"],
             )
         )
         db.commit()
@@ -33,7 +35,9 @@ def test_get_profile_returns_persisted_profile(
 
     assert response.status_code == 200
     assert response.json()["data"]["headline"] == "Software Engineer"
+    assert response.json()["data"]["stack"] == ["Python", "PostgreSQL"]
     assert response.json()["data"]["targetRole"] == "Backend Engineer"
+    assert response.json()["data"]["targetRoles"] == ["Backend Engineer", "AI Engineer"]
 
 
 @pytest.mark.integration
@@ -45,7 +49,9 @@ def test_put_profile_persists_profile(integration_client, db_session_factory):
         "/api/v1/profile",
         json={
             "headline": "Platform Engineer",
+            "stack": ["Python", "FastAPI"],
             "targetRole": "AI Engineer",
+            "targetRoles": ["AI Engineer", "Backend Engineer"],
             "salaryExpectationMin": 40000,
             "salaryExpectationMax": 50000,
         },
@@ -59,7 +65,9 @@ def test_put_profile_persists_profile(integration_client, db_session_factory):
         user = get_or_create_default_user(db)
         profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).one()
         assert profile.headline == "Platform Engineer"
+        assert profile.stack == ["Python", "FastAPI"]
         assert profile.target_role == "AI Engineer"
+        assert profile.target_roles == ["AI Engineer", "Backend Engineer"]
         assert profile.salary_expectation_min == 40000
         assert profile.salary_expectation_max == 50000
     finally:
