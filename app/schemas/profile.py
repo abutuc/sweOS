@@ -15,7 +15,9 @@ class ProfileBase(ApiSchema):
     bio: str | None = None
     years_experience: YearsExperience | None = None
     current_role: str | None = None
+    stack: list[str] | None = None
     target_role: str | None = None
+    target_roles: list[str] | None = None
     target_seniority: str | None = None
     preferred_locations: list[str] | None = None
     preferred_work_modes: list[str] | None = None
