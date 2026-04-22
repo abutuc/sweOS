@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from app.api.dependencies import get_db_session
 from app.main import app
 from app.core.config import get_settings
-from tests.db_utils import reset_public_schema
+from tests.db_utils import is_database_available, reset_public_schema
 
 
 @pytest.fixture(scope="session")
@@ -21,6 +21,8 @@ def integration_engine():
 
 @pytest.fixture
 def migrated_db(integration_engine):
+    if not is_database_available(integration_engine):
+        pytest.skip("Postgres is not reachable at the configured database URL")
     reset_public_schema(integration_engine)
     yield integration_engine
     reset_public_schema(integration_engine)
