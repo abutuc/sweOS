@@ -3,8 +3,8 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_db_session
-from app.core.bootstrap import get_or_create_default_user
+from app.api.dependencies import get_db_session, require_current_user
+from app.models.user import User
 from app.models.user_profile import UserProfile
 from app.schemas.profile import (
     ProfileEnvelope,
@@ -19,8 +19,10 @@ router = APIRouter(prefix="/profile", tags=["profile"])
 
 
 @router.get("", response_model=ProfileEnvelope)
-def get_profile(db: Session = Depends(get_db_session)) -> ProfileEnvelope:
-    user = get_or_create_default_user(db)
+def get_profile(
+    db: Session = Depends(get_db_session),
+    user: User = Depends(require_current_user),
+) -> ProfileEnvelope:
     profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).one_or_none()
 
     if profile is None:
@@ -50,8 +52,8 @@ def get_profile(db: Session = Depends(get_db_session)) -> ProfileEnvelope:
 def upsert_profile(
     payload: ProfileUpdate,
     db: Session = Depends(get_db_session),
+    user: User = Depends(require_current_user),
 ) -> ProfileUpdateEnvelope:
-    user = get_or_create_default_user(db)
     profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).one_or_none()
 
     profile_data = payload.model_dump(by_alias=False)
