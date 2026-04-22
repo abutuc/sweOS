@@ -1,5 +1,12 @@
 """API schemas package."""
 
+from app.schemas.auth import (
+    AuthEnvelope,
+    AuthLoginRequest,
+    AuthRegisterRequest,
+    AuthResponseData,
+    AuthUser,
+)
 from app.schemas.goal import GoalCreate, GoalEnvelope, GoalRead, GoalsEnvelope
 from app.schemas.profile import (
     ProfileEnvelope,
@@ -19,6 +26,11 @@ from app.schemas.skill import (
 )
 
 __all__ = [
+    "AuthEnvelope",
+    "AuthLoginRequest",
+    "AuthRegisterRequest",
+    "AuthResponseData",
+    "AuthUser",
     "GoalCreate",
     "GoalEnvelope",
     "GoalRead",
