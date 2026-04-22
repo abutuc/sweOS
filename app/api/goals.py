@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -42,7 +44,7 @@ def create_goal(
 
 @router.put("/{goal_id}", response_model=GoalEnvelope)
 def update_goal(
-    goal_id: str,
+    goal_id: uuid.UUID,
     payload: GoalUpdate,
     db: Session = Depends(get_db_session),
     user: User = Depends(require_current_user),
@@ -61,7 +63,7 @@ def update_goal(
 
 @router.delete("/{goal_id}", response_model=GoalDeleteEnvelope)
 def delete_goal(
-    goal_id: str,
+    goal_id: uuid.UUID,
     db: Session = Depends(get_db_session),
     user: User = Depends(require_current_user),
 ) -> GoalDeleteEnvelope:
