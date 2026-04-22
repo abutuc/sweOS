@@ -125,3 +125,34 @@ def test_put_profile_creates_profile(monkeypatch):
     assert fake_session.profile.headline == payload["headline"]
     assert fake_session.profile.target_role == payload["target_role"]
     assert fake_session.profile.preferred_locations == payload["preferred_locations"]
+
+
+def test_put_profile_rejects_invalid_salary_range(monkeypatch):
+    default_user_id = uuid.uuid4()
+    fake_session = _FakeSession()
+
+    def fake_get_or_create_default_user(_db):
+        return SimpleNamespace(id=default_user_id)
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr(
+        "app.api.profile.get_or_create_default_user",
+        fake_get_or_create_default_user,
+    )
+    app.dependency_overrides[get_db_session] = override_get_db_session
+
+    with TestClient(app) as client:
+        response = client.put(
+            "/api/v1/profile",
+            json={
+                "salaryExpectationMin": 50000,
+                "salaryExpectationMax": 40000,
+            },
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 422
+    assert fake_session.committed is False
