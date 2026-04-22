@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from app.models.user_skill import ProficiencyLevel
 from app.schemas.base import ApiSchema
@@ -45,6 +45,13 @@ class UserSkillUpsertItem(ApiSchema):
 
 class UserSkillsUpsertRequest(ApiSchema):
     skills: list[UserSkillUpsertItem]
+
+    @model_validator(mode="after")
+    def validate_unique_skill_ids(self):
+        skill_ids = [item.skill_id for item in self.skills]
+        if len(skill_ids) != len(set(skill_ids)):
+            raise ValueError("skills must not contain duplicate skillId values")
+        return self
 
 
 class UserSkillsUpsertResult(ApiSchema):
