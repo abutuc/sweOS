@@ -79,3 +79,9 @@ Because the current integration setup shares one database, run these slices sequ
 .venv/bin/pytest tests/test_skills_integration.py -m integration
 .venv/bin/pytest tests/test_goals_integration.py -m integration
 ```
+
+Current Epic 1 backend validation command:
+
+```bash
+.venv/bin/pytest tests/test_profile_api.py tests/test_skills_api.py tests/test_goals_api.py tests/test_migrations.py tests/test_profile_integration.py tests/test_skills_integration.py tests/test_goals_integration.py
+```
