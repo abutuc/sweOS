@@ -101,12 +101,97 @@ a {
   grid-column: 1 / -1;
 }
 
+.section-heading {
+  margin-bottom: 20px;
+}
+
+.section-heading h2,
+.skill-pane h3 {
+  margin: 0;
+}
+
+.section-kicker {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: var(--accent-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.field-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(24, 38, 29, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--ink);
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.section-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.primary-button {
+  padding: 13px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+  color: white;
+  cursor: pointer;
+}
+
+.skill-stack {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.skill-pane {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--line);
+}
+
 @media (max-width: 880px) {
   .workspace-grid {
     grid-template-columns: 1fr;
   }
 
   .workspace-card-wide {
+    grid-column: auto;
+  }
+
+  .field-grid,
+  .skill-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .field-wide {
     grid-column: auto;
   }
 }

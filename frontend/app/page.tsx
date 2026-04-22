@@ -1,3 +1,7 @@
+import { GoalsSection } from "@/components/goals-section";
+import { ProfileSection } from "@/components/profile-section";
+import { SkillsSection } from "@/components/skills-section";
+
 export default function HomePage() {
   return (
     <main className="page-shell">
@@ -10,9 +14,9 @@ export default function HomePage() {
       </section>
 
       <section className="workspace-grid">
-        <article className="workspace-card">Profile panel</article>
-        <article className="workspace-card">Skills panel</article>
-        <article className="workspace-card workspace-card-wide">Goals panel</article>
+        <ProfileSection className="workspace-card" />
+        <SkillsSection className="workspace-card" />
+        <GoalsSection className="workspace-card workspace-card-wide" />
       </section>
     </main>
   );
