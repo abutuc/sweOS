@@ -70,10 +70,12 @@ Roll the schema back one revision:
 
 Integration tests expect Postgres to be reachable at the configured `database_url`.
 If the database is unavailable, the integration suite will skip cleanly.
+Because the current integration setup shares one database, run these slices sequentially rather than in parallel.
 
 ```bash
 .venv/bin/pytest -m integration
 .venv/bin/pytest tests/test_migrations.py -m integration
 .venv/bin/pytest tests/test_profile_integration.py -m integration
 .venv/bin/pytest tests/test_skills_integration.py -m integration
+.venv/bin/pytest tests/test_goals_integration.py -m integration
 ```
