@@ -54,6 +54,48 @@ DEFAULT_SKILLS: Sequence[dict[str, str]] = (
         "category": "computer-science",
         "description": "Algorithmic problem-solving and complexity analysis.",
     },
+    {
+        "slug": "data-structures",
+        "name": "Data Structures",
+        "category": "computer-science",
+        "description": "Core data structures and their trade-offs.",
+    },
+    {
+        "slug": "testing",
+        "name": "Testing",
+        "category": "software-engineering-practice",
+        "description": "Automated testing strategy and implementation.",
+    },
+    {
+        "slug": "code-review",
+        "name": "Code Review",
+        "category": "software-engineering-practice",
+        "description": "Reviewing code for correctness, maintainability, and risk.",
+    },
+    {
+        "slug": "ci-cd",
+        "name": "CI/CD",
+        "category": "cloud-devops",
+        "description": "Continuous integration and delivery practices.",
+    },
+    {
+        "slug": "aws",
+        "name": "AWS",
+        "category": "cloud-devops",
+        "description": "Amazon Web Services cloud platform.",
+    },
+    {
+        "slug": "react",
+        "name": "React",
+        "category": "framework",
+        "description": "Frontend library for component-based interfaces.",
+    },
+    {
+        "slug": "redis",
+        "name": "Redis",
+        "category": "database",
+        "description": "In-memory data store for caching and fast access patterns.",
+    },
 )
 
 
