@@ -594,6 +594,23 @@ Create draft or direct submission.
 }
 ```
 
+### `GET /api/v1/topic-mastery`
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "topic": "distributed systems",
+      "attemptsCount": 2,
+      "averageScore": 4.6,
+      "weakestDimension": "tradeOffReasoning"
+    }
+  ]
+}
+```
+
 ## 2.5 Analytics
 
 ### `GET /api/v1/analytics/dashboard`
