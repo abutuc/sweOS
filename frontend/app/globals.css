@@ -421,6 +421,129 @@ a {
   margin-top: 18px;
 }
 
+.learning-grid,
+.learning-subgrid {
+  display: grid;
+  gap: 14px;
+}
+
+.learning-grid {
+  grid-template-columns: 0.85fr 1.15fr;
+}
+
+.learning-subgrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.learning-column {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.learning-column-wide {
+  min-width: 0;
+}
+
+.learning-panel {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+}
+
+.exercise-history,
+.mastery-list {
+  display: grid;
+  gap: 10px;
+}
+
+.exercise-history-item {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink);
+  text-align: left;
+}
+
+.exercise-history-item span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.exercise-detail {
+  display: grid;
+  gap: 16px;
+}
+
+.exercise-detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.exercise-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.exercise-badge {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(159, 177, 255, 0.14);
+  color: #dbe3ff;
+  font-size: 0.86rem;
+}
+
+.exercise-badge-button {
+  border: 0;
+  cursor: pointer;
+}
+
+.plain-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.score-chip {
+  display: inline-block;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(104, 240, 216, 0.14);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.mastery-card {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mastery-card p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.field-inline {
+  align-content: end;
+}
+
+.field-inline input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+
 .goal-card {
   padding: 18px;
   border-radius: 18px;
@@ -512,7 +635,9 @@ a {
   .skill-stack,
   .field-grid,
   .hero-stats,
-  .hero-panel-topline {
+  .hero-panel-topline,
+  .learning-grid,
+  .learning-subgrid {
     grid-template-columns: 1fr;
   }
 

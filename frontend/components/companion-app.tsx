@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { AccountSection } from "@/components/account-section";
 import { AuthPanel } from "@/components/auth-panel";
 import { GoalsSection } from "@/components/goals-section";
+import { LearningGymSection } from "@/components/learning-gym-section";
 import { PreferencesSection } from "@/components/preferences-section";
 import { ProfileSection } from "@/components/profile-section";
 import { SkillsSection } from "@/components/skills-section";
@@ -104,6 +105,7 @@ export function CompanionApp() {
         <AccountSection className="workspace-card" user={user} onUserUpdated={setUser} />
         <ProfileSection className="workspace-card" />
         <SkillsSection className="workspace-card" />
+        <LearningGymSection className="workspace-card workspace-card-wide" />
         <PreferencesSection className="workspace-card workspace-card-wide" />
         <GoalsSection className="workspace-card workspace-card-wide" />
       </section>
