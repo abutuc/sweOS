@@ -1,5 +1,5 @@
-import { CompanionApp } from "@/components/companion-app";
+import { DashboardPage } from "@/components/dashboard-page";
 
 export default function HomePage() {
-  return <CompanionApp />;
+  return <DashboardPage />;
 }
