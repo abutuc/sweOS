@@ -80,6 +80,81 @@ a {
   padding-top: 24px;
 }
 
+.app-shell-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(12, 24, 42, 0.84);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(24px);
+}
+
+.app-shell-brand {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.app-shell-brand strong {
+  display: block;
+  letter-spacing: -0.03em;
+}
+
+.app-shell-brand p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.app-shell-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(104, 240, 216, 0.22), rgba(42, 212, 255, 0.22));
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.app-shell-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.app-shell-nav-item {
+  padding: 11px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.app-shell-nav-item:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+}
+
+.app-shell-nav-item-active {
+  background: rgba(104, 240, 216, 0.12);
+  color: var(--ink);
+}
+
+.app-shell-identity {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .hero-panel,
 .workspace-card,
 .auth-card,
@@ -535,6 +610,17 @@ a {
   color: var(--muted);
 }
 
+.dashboard-copy {
+  display: grid;
+  gap: 14px;
+}
+
+.dashboard-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .field-inline {
   align-content: end;
 }
@@ -630,6 +716,7 @@ a {
 }
 
 @media (max-width: 980px) {
+  .app-shell-header,
   .auth-panel,
   .workspace-grid,
   .skill-stack,
@@ -644,6 +731,15 @@ a {
   .hero-panel-topline,
   .auth-card-header {
     display: grid;
+  }
+
+  .app-shell-header {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell-nav,
+  .app-shell-identity {
+    justify-content: flex-start;
   }
 
   .workspace-card-wide,
