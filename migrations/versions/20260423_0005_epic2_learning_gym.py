@@ -44,6 +44,41 @@ source_type_enum = postgresql.ENUM(
     "ai_generated",
     name="source_type",
 )
+exercise_type_column_enum = postgresql.ENUM(
+    "dsa",
+    "system_design",
+    "architecture_decision",
+    "database_optimization",
+    "debugging",
+    "agile_scenario",
+    "code_review",
+    name="exercise_type",
+    create_type=False,
+)
+difficulty_level_column_enum = postgresql.ENUM(
+    "easy",
+    "medium",
+    "hard",
+    name="difficulty_level",
+    create_type=False,
+)
+submission_status_column_enum = postgresql.ENUM(
+    "draft",
+    "submitted",
+    "evaluated",
+    "failed_evaluation",
+    name="submission_status",
+    create_type=False,
+)
+source_type_column_enum = postgresql.ENUM(
+    "manual",
+    "rss",
+    "job_board",
+    "import",
+    "ai_generated",
+    name="source_type",
+    create_type=False,
+)
 
 
 def upgrade() -> None:
@@ -57,10 +92,10 @@ def upgrade() -> None:
         "exercises",
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column("type", exercise_type_enum, nullable=False),
+        sa.Column("type", exercise_type_column_enum, nullable=False),
         sa.Column("topic", sa.String(), nullable=False),
         sa.Column("subtopic", sa.String(), nullable=True),
-        sa.Column("difficulty", difficulty_level_enum, nullable=False),
+        sa.Column("difficulty", difficulty_level_column_enum, nullable=False),
         sa.Column("title", sa.String(), nullable=False),
         sa.Column("prompt_markdown", sa.Text(), nullable=False),
         sa.Column(
@@ -87,7 +122,7 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("tags", postgresql.ARRAY(sa.String()), nullable=False, server_default="{}"),
-        sa.Column("source", source_type_enum, nullable=False, server_default="ai_generated"),
+        sa.Column("source", source_type_column_enum, nullable=False, server_default="ai_generated"),
         sa.Column("created_by_ai", sa.Boolean(), nullable=False, server_default=sa.text("false")),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="SET NULL"),
@@ -99,7 +134,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("exercise_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("status", submission_status_enum, nullable=False, server_default="draft"),
+        sa.Column("status", submission_status_column_enum, nullable=False, server_default="draft"),
         sa.Column("answer_markdown", sa.Text(), nullable=True),
         sa.Column("answer_code", sa.Text(), nullable=True),
         sa.Column("answer_sql", sa.Text(), nullable=True),

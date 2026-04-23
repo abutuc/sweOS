@@ -32,7 +32,11 @@ class ExerciseAttempt(Base):
         nullable=False,
     )
     status: Mapped[SubmissionStatus] = mapped_column(
-        Enum(SubmissionStatus, name="submission_status"),
+        Enum(
+            SubmissionStatus,
+            name="submission_status",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
         default=SubmissionStatus.draft,
     )

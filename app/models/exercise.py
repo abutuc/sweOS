@@ -43,11 +43,22 @@ class Exercise(Base):
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
     )
-    type: Mapped[ExerciseType] = mapped_column(Enum(ExerciseType, name="exercise_type"), nullable=False)
+    type: Mapped[ExerciseType] = mapped_column(
+        Enum(
+            ExerciseType,
+            name="exercise_type",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
+        nullable=False,
+    )
     topic: Mapped[str] = mapped_column(String, nullable=False)
     subtopic: Mapped[str | None] = mapped_column(String, nullable=True)
     difficulty: Mapped[DifficultyLevel] = mapped_column(
-        Enum(DifficultyLevel, name="difficulty_level"),
+        Enum(
+            DifficultyLevel,
+            name="difficulty_level",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
     )
     title: Mapped[str] = mapped_column(String, nullable=False)
@@ -58,7 +69,11 @@ class Exercise(Base):
     canonical_solution_json: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
     source: Mapped[SourceType] = mapped_column(
-        Enum(SourceType, name="source_type"),
+        Enum(
+            SourceType,
+            name="source_type",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
         default=SourceType.ai_generated,
     )
