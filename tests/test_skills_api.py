@@ -240,11 +240,14 @@ class _FakeUserSkillModel:
 
 
 class _FakeUserSkillSession:
-    def __init__(self, user_skills):
+    def __init__(self, user_skills, existing_skill_ids=None):
         self._user_skills = user_skills
+        self._existing_skill_ids = list(existing_skill_ids or [])
         self.committed = False
 
-    def query(self, *_args, **_kwargs):
+    def query(self, *args, **_kwargs):
+        if args and getattr(args[0], "field_name", None) == "skill_id":
+            return _FakeSkillIdQuery(self._existing_skill_ids)
         return _FakeUserSkillQuery(self._user_skills)
 
     def add(self, obj):
@@ -255,6 +258,19 @@ class _FakeUserSkillSession:
 
     def close(self):
         return None
+
+
+class _FakeSkillIdQuery:
+    def __init__(self, skill_ids):
+        self._skill_ids = skill_ids
+
+    def filter(self, predicate):
+        return _FakeSkillIdQuery(
+            [skill_id for skill_id in self._skill_ids if predicate.compare(SimpleNamespace(skill_id=skill_id))]
+        )
+
+    def all(self):
+        return [(skill_id,) for skill_id in self._skill_ids]
 
 
 def _override_current_user(user_id: uuid.UUID):
@@ -330,12 +346,16 @@ def test_put_my_skills_creates_and_updates_user_skills():
         skill_id=existing_skill_id,
         self_assessed_level=ProficiencyLevel.beginner,
     )
-    fake_session = _FakeUserSkillSession([existing_user_skill])
+    fake_session = _FakeUserSkillSession(
+        [existing_user_skill],
+        existing_skill_ids=[existing_skill_id, new_skill_id],
+    )
 
     def override_get_db_session():
         yield fake_session
 
     original_user_skill_model = skills_api.UserSkill
+    original_skill_model = skills_api.Skill
 
     class _FakeWritableUserSkillModel(_FakeUserSkillModel):
         skill_id = _FakeColumn("skill_id")
@@ -345,7 +365,11 @@ def test_put_my_skills_creates_and_updates_user_skills():
             self.skill_id = skill_id
             self.self_assessed_level = self_assessed_level
 
+    class _FakeSkillModel:
+        id = _FakeColumn("skill_id")
+
     skills_api.UserSkill = _FakeWritableUserSkillModel
+    skills_api.Skill = _FakeSkillModel
     app.dependency_overrides[get_db_session] = override_get_db_session
     app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
@@ -367,6 +391,7 @@ def test_put_my_skills_creates_and_updates_user_skills():
         )
 
     skills_api.UserSkill = original_user_skill_model
+    skills_api.Skill = original_skill_model
     app.dependency_overrides.clear()
 
     assert response.status_code == 200
@@ -412,4 +437,42 @@ def test_put_my_skills_rejects_duplicate_skill_ids():
     app.dependency_overrides.clear()
 
     assert response.status_code == 422
+    assert fake_session.committed is False
+
+
+def test_put_my_skills_rejects_unknown_skill_ids():
+    user_id = uuid.uuid4()
+    unknown_skill_id = uuid.uuid4()
+    fake_session = _FakeUserSkillSession([], existing_skill_ids=[])
+
+    def override_get_db_session():
+        yield fake_session
+
+    original_skill_model = skills_api.Skill
+
+    class _FakeSkillModel:
+        id = _FakeColumn("skill_id")
+
+    skills_api.Skill = _FakeSkillModel
+    app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
+
+    with TestClient(app) as client:
+        response = client.put(
+            "/api/v1/skills/me",
+            json={
+                "skills": [
+                    {
+                        "skillId": str(unknown_skill_id),
+                        "selfAssessedLevel": "advanced",
+                    }
+                ]
+            },
+        )
+
+    skills_api.Skill = original_skill_model
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 422
+    assert "Unknown skillId values" in response.json()["detail"]
     assert fake_session.committed is False

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db_session, require_current_user
@@ -68,6 +68,18 @@ def upsert_my_skills(
     db: Session = Depends(get_db_session),
     user: User = Depends(require_current_user),
 ) -> UserSkillsUpsertEnvelope:
+    skill_ids = [item.skill_id for item in payload.skills]
+    existing_skill_ids = {
+        skill_id
+        for (skill_id,) in db.query(Skill.id).filter(Skill.id.in_(skill_ids)).all()
+    }
+    missing_skill_ids = sorted(str(skill_id) for skill_id in set(skill_ids) - existing_skill_ids)
+    if missing_skill_ids:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown skillId values: {', '.join(missing_skill_ids)}",
+        )
+
     updated_count = 0
 
     for item in payload.skills:
