@@ -25,6 +25,10 @@ class AuthLoginRequest(ApiSchema):
     password: str = Field(min_length=8)
 
 
+class AuthUserUpdateRequest(ApiSchema):
+    full_name: str | None = None
+
+
 class AuthResponseData(ApiSchema):
     user: AuthUser
     token: str

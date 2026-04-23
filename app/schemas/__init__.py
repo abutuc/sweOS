@@ -7,6 +7,7 @@ from app.schemas.auth import (
     AuthResponseData,
     AuthUser,
     AuthUserEnvelope,
+    AuthUserUpdateRequest,
 )
 from app.schemas.goal import (
     GoalCreate,
@@ -48,6 +49,7 @@ __all__ = [
     "AuthResponseData",
     "AuthUser",
     "AuthUserEnvelope",
+    "AuthUserUpdateRequest",
     "GoalCreate",
     "GoalDeleteEnvelope",
     "GoalDeleteResult",

@@ -12,6 +12,7 @@ from app.schemas.auth import (
     AuthResponseData,
     AuthUser,
     AuthUserEnvelope,
+    AuthUserUpdateRequest,
 )
 
 
@@ -65,4 +66,16 @@ def login(
 
 @router.get("/me", response_model=AuthUserEnvelope)
 def get_me(user: User = Depends(require_current_user)) -> AuthUserEnvelope:
+    return AuthUserEnvelope(data=AuthUser.model_validate(user))
+
+
+@router.put("/me", response_model=AuthUserEnvelope)
+def update_me(
+    payload: AuthUserUpdateRequest,
+    db: Session = Depends(get_db_session),
+    user: User = Depends(require_current_user),
+) -> AuthUserEnvelope:
+    user.full_name = payload.full_name
+    db.commit()
+    db.refresh(user)
     return AuthUserEnvelope(data=AuthUser.model_validate(user))
