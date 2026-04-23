@@ -25,6 +25,8 @@ def test_get_profile_returns_persisted_profile(
                 stack=["Python", "PostgreSQL"],
                 target_role="Backend Engineer",
                 target_roles=["Backend Engineer", "AI Engineer"],
+                preferred_industries=["Developer tools"],
+                learning_goals=["System design depth"],
             )
         )
         db.commit()
@@ -38,6 +40,8 @@ def test_get_profile_returns_persisted_profile(
     assert response.json()["data"]["stack"] == ["Python", "PostgreSQL"]
     assert response.json()["data"]["targetRole"] == "Backend Engineer"
     assert response.json()["data"]["targetRoles"] == ["Backend Engineer", "AI Engineer"]
+    assert response.json()["data"]["preferredIndustries"] == ["Developer tools"]
+    assert response.json()["data"]["learningGoals"] == ["System design depth"]
 
 
 @pytest.mark.integration
@@ -53,6 +57,8 @@ def test_put_profile_persists_profile(integration_client, db_session_factory, au
             "stack": ["Python", "FastAPI"],
             "targetRole": "AI Engineer",
             "targetRoles": ["AI Engineer", "Backend Engineer"],
+            "preferredIndustries": ["AI", "Developer tools"],
+            "learningGoals": ["Build AI systems portfolio"],
             "salaryExpectationMin": 40000,
             "salaryExpectationMax": 50000,
         },
@@ -68,6 +74,8 @@ def test_put_profile_persists_profile(integration_client, db_session_factory, au
         assert profile.stack == ["Python", "FastAPI"]
         assert profile.target_role == "AI Engineer"
         assert profile.target_roles == ["AI Engineer", "Backend Engineer"]
+        assert profile.preferred_industries == ["AI", "Developer tools"]
+        assert profile.learning_goals == ["Build AI systems portfolio"]
         assert profile.salary_expectation_min == 40000
         assert profile.salary_expectation_max == 50000
     finally:

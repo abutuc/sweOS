@@ -48,6 +48,12 @@ export function ProfileSection({ className }: ProfileSectionProps) {
     setProfile((current) => (current ? { ...current, [key]: value } : current));
   };
 
+  const parseTags = (value: string) =>
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
   const handleSave = async () => {
     if (!profile) {
       return;
@@ -116,6 +122,15 @@ export function ProfileSection({ className }: ProfileSectionProps) {
             placeholder="Backend engineer with AI curiosity"
           />
         </label>
+        <label className="field field-wide">
+          <span>Bio</span>
+          <textarea
+            rows={3}
+            value={profile?.bio ?? ""}
+            onChange={(event) => updateProfileField("bio", event.target.value)}
+            placeholder="Short background and context the system should remember."
+          />
+        </label>
         <label className="field">
           <span>Years of experience</span>
           <input
@@ -127,16 +142,8 @@ export function ProfileSection({ className }: ProfileSectionProps) {
         <label className="field field-wide">
           <span>Stack tags</span>
           <input
-            value={profile?.stack.join(", ") ?? ""}
-            onChange={(event) =>
-              updateProfileField(
-                "stack",
-                event.target.value
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean),
-              )
-            }
+            value={(profile?.stack ?? []).join(", ")}
+            onChange={(event) => updateProfileField("stack", parseTags(event.target.value))}
             placeholder="Python, PostgreSQL, FastAPI"
           />
         </label>
@@ -159,17 +166,55 @@ export function ProfileSection({ className }: ProfileSectionProps) {
         <label className="field field-wide">
           <span>Target roles</span>
           <input
-            value={profile?.targetRoles.join(", ") ?? ""}
-            onChange={(event) =>
-              updateProfileField(
-                "targetRoles",
-                event.target.value
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean),
-              )
-            }
+            value={(profile?.targetRoles ?? []).join(", ")}
+            onChange={(event) => updateProfileField("targetRoles", parseTags(event.target.value))}
             placeholder="Backend Engineer, AI Engineer"
+          />
+        </label>
+        <label className="field">
+          <span>Target seniority</span>
+          <input
+            value={profile?.targetSeniority ?? ""}
+            onChange={(event) => updateProfileField("targetSeniority", event.target.value)}
+            placeholder="mid"
+          />
+        </label>
+        <label className="field field-wide">
+          <span>Preferred industries</span>
+          <input
+            value={(profile?.preferredIndustries ?? []).join(", ")}
+            onChange={(event) =>
+              updateProfileField("preferredIndustries", parseTags(event.target.value))
+            }
+            placeholder="AI, Developer tools, Fintech"
+          />
+        </label>
+        <label className="field field-wide">
+          <span>Preferred locations</span>
+          <input
+            value={(profile?.preferredLocations ?? []).join(", ")}
+            onChange={(event) =>
+              updateProfileField("preferredLocations", parseTags(event.target.value))
+            }
+            placeholder="Portugal, Remote EU"
+          />
+        </label>
+        <label className="field field-wide">
+          <span>Preferred work modes</span>
+          <input
+            value={(profile?.preferredWorkModes ?? []).join(", ")}
+            onChange={(event) =>
+              updateProfileField("preferredWorkModes", parseTags(event.target.value))
+            }
+            placeholder="remote, hybrid"
+          />
+        </label>
+        <label className="field field-wide">
+          <span>Learning goals</span>
+          <input
+            value={(profile?.learningGoals ?? []).join(", ")}
+            onChange={(event) => updateProfileField("learningGoals", parseTags(event.target.value))}
+            placeholder="System design depth, AI engineering portfolio"
           />
         </label>
         <label className="field field-wide">

@@ -76,10 +76,12 @@ def test_get_profile_returns_empty_profile_shape():
             "targetRole": None,
             "targetRoles": [],
             "targetSeniority": None,
+            "preferredIndustries": [],
             "preferredLocations": [],
             "preferredWorkModes": [],
             "salaryExpectationMin": None,
             "salaryExpectationMax": None,
+            "learningGoals": [],
             "summary": None,
         }
     }
@@ -104,10 +106,12 @@ def test_put_profile_creates_profile():
         "target_role": "Backend Engineer",
         "target_roles": ["Backend Engineer", "AI Engineer"],
         "target_seniority": "mid",
+        "preferred_industries": ["Developer tools"],
         "preferred_locations": ["Portugal", "Remote EU"],
         "preferred_work_modes": ["remote"],
         "salary_expectation_min": 30000,
         "salary_expectation_max": 45000,
+        "learning_goals": ["System design depth"],
         "summary": "Building toward backend specialization.",
     }
 
@@ -125,7 +129,9 @@ def test_put_profile_creates_profile():
     assert fake_session.profile.stack == payload["stack"]
     assert fake_session.profile.target_role == payload["target_role"]
     assert fake_session.profile.target_roles == payload["target_roles"]
+    assert fake_session.profile.preferred_industries == payload["preferred_industries"]
     assert fake_session.profile.preferred_locations == payload["preferred_locations"]
+    assert fake_session.profile.learning_goals == payload["learning_goals"]
 
 
 def test_put_profile_rejects_invalid_salary_range():

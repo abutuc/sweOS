@@ -24,10 +24,12 @@ class UserProfile(Base):
     target_role: Mapped[str | None] = mapped_column(String, nullable=True)
     target_roles: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     target_seniority: Mapped[str | None] = mapped_column(String, nullable=True)
+    preferred_industries: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     preferred_locations: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     preferred_work_modes: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     salary_expectation_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
     salary_expectation_max: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    learning_goals: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

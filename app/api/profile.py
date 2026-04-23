@@ -37,10 +37,12 @@ def get_profile(
                 target_role=None,
                 target_roles=[],
                 target_seniority=None,
+                preferred_industries=[],
                 preferred_locations=[],
                 preferred_work_modes=[],
                 salary_expectation_min=None,
                 salary_expectation_max=None,
+                learning_goals=[],
                 summary=None,
             )
         )

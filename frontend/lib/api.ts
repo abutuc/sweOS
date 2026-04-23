@@ -21,10 +21,12 @@ export type Profile = {
   targetRole: string | null;
   targetRoles: string[];
   targetSeniority: string | null;
+  preferredIndustries: string[];
   preferredLocations: string[];
   preferredWorkModes: string[];
   salaryExpectationMin: number | null;
   salaryExpectationMax: number | null;
+  learningGoals: string[];
   summary: string | null;
 };
 
