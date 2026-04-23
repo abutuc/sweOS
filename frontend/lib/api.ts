@@ -129,6 +129,11 @@ export const api = {
     return response;
   },
   getMe: () => request<{ data: AuthUser }>("/auth/me"),
+  updateMe: (payload: { fullName: string | null }) =>
+    request<{ data: AuthUser }>("/auth/me", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
   getProfile: () => request<{ data: Profile }>("/profile"),
   saveProfile: (payload: Partial<Profile>) =>
     request<{ data: { updated: boolean } }>("/profile", {

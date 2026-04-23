@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { AccountSection } from "@/components/account-section";
 import { AuthPanel } from "@/components/auth-panel";
 import { GoalsSection } from "@/components/goals-section";
 import { PreferencesSection } from "@/components/preferences-section";
@@ -100,6 +101,7 @@ export function CompanionApp() {
       </section>
 
       <section className="workspace-grid">
+        <AccountSection className="workspace-card" user={user} onUserUpdated={setUser} />
         <ProfileSection className="workspace-card" />
         <SkillsSection className="workspace-card" />
         <PreferencesSection className="workspace-card workspace-card-wide" />
