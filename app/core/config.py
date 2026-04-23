@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     jwt_secret_key: str = "change-me-for-production"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 12
+    cors_allowed_origins: list[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
 
     model_config = SettingsConfigDict(
         env_file=".env",
