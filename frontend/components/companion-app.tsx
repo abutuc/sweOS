@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { AuthPanel } from "@/components/auth-panel";
 import { GoalsSection } from "@/components/goals-section";
+import { PreferencesSection } from "@/components/preferences-section";
 import { ProfileSection } from "@/components/profile-section";
 import { SkillsSection } from "@/components/skills-section";
 import { api, ApiError, type AuthUser } from "@/lib/api";
@@ -101,6 +102,7 @@ export function CompanionApp() {
       <section className="workspace-grid">
         <ProfileSection className="workspace-card" />
         <SkillsSection className="workspace-card" />
+        <PreferencesSection className="workspace-card workspace-card-wide" />
         <GoalsSection className="workspace-card workspace-card-wide" />
       </section>
     </main>

@@ -61,6 +61,15 @@ export type Goal = {
   status: string;
 };
 
+export type Preferences = {
+  userId: string;
+  contentSources: string[];
+  notificationCadence: string;
+  aiAssistanceLevel: string;
+  privacySettings: Record<string, unknown>;
+  targetOpportunityFilters: Record<string, unknown>;
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
 
@@ -147,5 +156,11 @@ export const api = {
   deleteGoal: (goalId: string) =>
     request<{ data: { deleted: boolean } }>(`/goals/${goalId}`, {
       method: "DELETE",
+    }),
+  getPreferences: () => request<{ data: Preferences }>("/preferences"),
+  savePreferences: (payload: Partial<Preferences>) =>
+    request<{ data: { updated: boolean } }>("/preferences", {
+      method: "PUT",
+      body: JSON.stringify(payload),
     }),
 };

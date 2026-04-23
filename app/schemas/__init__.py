@@ -24,6 +24,13 @@ from app.schemas.profile import (
     ProfileUpdateEnvelope,
     ProfileUpdateResult,
 )
+from app.schemas.preference import (
+    PreferenceEnvelope,
+    PreferenceRead,
+    PreferenceUpdate,
+    PreferenceUpdateEnvelope,
+    PreferenceUpdateResult,
+)
 from app.schemas.skill import (
     SkillCatalogEnvelope,
     SkillCatalogItem,
@@ -48,6 +55,11 @@ __all__ = [
     "GoalRead",
     "GoalUpdate",
     "GoalsEnvelope",
+    "PreferenceEnvelope",
+    "PreferenceRead",
+    "PreferenceUpdate",
+    "PreferenceUpdateEnvelope",
+    "PreferenceUpdateResult",
     "ProfileEnvelope",
     "ProfileRead",
     "ProfileUpdate",
