@@ -80,6 +80,42 @@ I recommend:
 }
 ```
 
+### `GET /api/v1/auth/me`
+
+#### Response
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "email": "andre@example.com",
+    "fullName": "Andre Butuc"
+  }
+}
+```
+
+### `PUT /api/v1/auth/me`
+
+#### Request
+
+```json
+{
+  "fullName": "Andre A. Butuc"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "email": "andre@example.com",
+    "fullName": "Andre A. Butuc"
+  }
+}
+```
+
 #### Response
 
 ```json
