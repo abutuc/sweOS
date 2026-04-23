@@ -18,7 +18,15 @@ def test_alembic_upgrade_creates_epic1_tables(integration_engine):
     inspector = inspect(integration_engine)
     table_names = set(inspector.get_table_names())
 
-    assert {"users", "user_profiles", "skills", "user_skills", "goals", "alembic_version"} <= table_names
+    assert {
+        "users",
+        "user_profiles",
+        "skills",
+        "user_skills",
+        "goals",
+        "user_preferences",
+        "alembic_version",
+    } <= table_names
 
 
 @pytest.mark.integration
@@ -40,3 +48,4 @@ def test_alembic_downgrade_removes_epic1_tables(integration_engine):
     assert "skills" not in table_names
     assert "user_skills" not in table_names
     assert "goals" not in table_names
+    assert "user_preferences" not in table_names
