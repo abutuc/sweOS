@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AuthContextProvider } from "@/components/auth-context";
 import { AuthPanel } from "@/components/auth-panel";
 import { api, ApiError, type AuthUser } from "@/lib/api";
 import { clearStoredToken, getStoredToken } from "@/lib/session";
@@ -79,40 +80,42 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <main className="page-shell page-shell-app">
-      <header className="app-shell-header">
-        <Link className="app-shell-brand" href="/">
-          <span className="app-shell-brand-mark">sweOS</span>
-          <div>
-            <strong>Companion</strong>
-            <p>Engineering operating system</p>
+    <AuthContextProvider value={{ user, setUser }}>
+      <main className="page-shell page-shell-app">
+        <header className="app-shell-header">
+          <Link className="app-shell-brand" href="/">
+            <span className="app-shell-brand-mark">sweOS</span>
+            <div>
+              <strong>Companion</strong>
+              <p>Engineering operating system</p>
+            </div>
+          </Link>
+
+          <nav className="app-shell-nav" aria-label="Primary">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                className={`app-shell-nav-item ${pathname === item.href ? "app-shell-nav-item-active" : ""}`}
+                href={item.href}
+                key={item.href}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="app-shell-identity">
+            <div className="identity-chip">
+              <span className="identity-chip-label">Active identity</span>
+              <strong>{user.fullName ?? user.email}</strong>
+            </div>
+            <button className="ghost-button" type="button" onClick={handleLogout}>
+              Logout
+            </button>
           </div>
-        </Link>
+        </header>
 
-        <nav className="app-shell-nav" aria-label="Primary">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              className={`app-shell-nav-item ${pathname === item.href ? "app-shell-nav-item-active" : ""}`}
-              href={item.href}
-              key={item.href}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="app-shell-identity">
-          <div className="identity-chip">
-            <span className="identity-chip-label">Active identity</span>
-            <strong>{user.fullName ?? user.email}</strong>
-          </div>
-          <button className="ghost-button" type="button" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </header>
-
-      {children}
-    </main>
+        {children}
+      </main>
+    </AuthContextProvider>
   );
 }
