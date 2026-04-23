@@ -113,10 +113,12 @@ I recommend:
     "targetRole": "Software Engineer II",
     "targetRoles": ["Software Engineer II", "AI Engineer"],
     "targetSeniority": "mid",
+    "preferredIndustries": ["Developer tools", "AI"],
     "preferredLocations": ["Portugal", "Remote EU"],
     "preferredWorkModes": ["remote", "hybrid"],
     "salaryExpectationMin": 30000,
     "salaryExpectationMax": 45000,
+    "learningGoals": ["System design depth", "AI engineering portfolio"],
     "summary": "..."
   }
 }
@@ -136,10 +138,12 @@ I recommend:
   "targetRole": "Software Engineer II",
   "targetRoles": ["Software Engineer II", "AI Engineer"],
   "targetSeniority": "mid",
+  "preferredIndustries": ["Developer tools", "AI"],
   "preferredLocations": ["Portugal", "Remote EU"],
   "preferredWorkModes": ["remote", "hybrid"],
   "salaryExpectationMin": 30000,
   "salaryExpectationMax": 45000,
+  "learningGoals": ["System design depth", "AI engineering portfolio"],
   "summary": "..."
 }
 ```
@@ -243,6 +247,7 @@ Bulk upsert.
       "title": "Land backend role",
       "description": "Strengthen backend profile",
       "targetDate": "2026-08-01",
+      "horizon": "medium",
       "priority": 2,
       "status": "active"
     }
@@ -259,6 +264,7 @@ Bulk upsert.
   "title": "Land backend role",
   "description": "Strengthen backend profile",
   "targetDate": "2026-08-01",
+  "horizon": "medium",
   "priority": 2,
   "status": "active"
 }
@@ -274,8 +280,60 @@ Bulk upsert.
     "title": "Land backend role",
     "description": "Strengthen backend profile",
     "targetDate": "2026-08-01",
+    "horizon": "medium",
     "priority": 2,
     "status": "active"
+  }
+}
+```
+
+### `GET /api/v1/preferences`
+
+#### Response
+
+```json
+{
+  "data": {
+    "userId": "uuid",
+    "contentSources": ["Stack Overflow", "Company blogs"],
+    "notificationCadence": "weekly",
+    "aiAssistanceLevel": "balanced",
+    "privacySettings": {
+      "localOnly": false
+    },
+    "targetOpportunityFilters": {
+      "remote": true,
+      "locations": ["Portugal", "Remote EU"]
+    }
+  }
+}
+```
+
+### `PUT /api/v1/preferences`
+
+#### Request
+
+```json
+{
+  "contentSources": ["Stack Overflow", "Company blogs"],
+  "notificationCadence": "weekly",
+  "aiAssistanceLevel": "balanced",
+  "privacySettings": {
+    "localOnly": false
+  },
+  "targetOpportunityFilters": {
+    "remote": true,
+    "locations": ["Portugal", "Remote EU"]
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "updated": true
   }
 }
 ```

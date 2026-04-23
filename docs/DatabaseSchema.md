@@ -139,12 +139,16 @@ create table user_profiles (
   bio text,
   years_experience numeric(4,1),
   current_role text,
+  stack text[],
   target_role text,
+  target_roles text[],
   target_seniority text,
+  preferred_industries text[],
   preferred_locations text[],
   preferred_work_modes text[],
   salary_expectation_min integer,
   salary_expectation_max integer,
+  learning_goals text[],
   summary text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -204,6 +208,7 @@ create table goals (
   title text not null,
   description text,
   target_date date,
+  horizon text not null default 'medium',
   priority integer not null default 3,
   status text not null default 'active',
   created_at timestamptz not null default now(),
@@ -211,9 +216,24 @@ create table goals (
 );
 ```
 
+### F. `user_preferences`
+
+```sql
+create table user_preferences (
+  user_id uuid primary key references users(id) on delete cascade,
+  content_sources text[],
+  notification_cadence text not null default 'weekly',
+  ai_assistance_level text not null default 'balanced',
+  privacy_settings jsonb not null default '{}'::jsonb,
+  target_opportunity_filters jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+```
+
 ## 1.5 Learning Domain
 
-### F. `exercises`
+### G. `exercises`
 
 Stores generated or manually created exercises.
 
@@ -274,7 +294,7 @@ create table exercises (
 }
 ```
 
-### G. `exercise_attempts`
+### H. `exercise_attempts`
 
 One exercise can have multiple attempts.
 
@@ -295,7 +315,7 @@ create table exercise_attempts (
 );
 ```
 
-### H. `exercise_evaluations`
+### I. `exercise_evaluations`
 
 Separate table for evaluation traceability and versioning.
 
@@ -329,7 +349,7 @@ create table exercise_evaluations (
 }
 ```
 
-### I. `user_topic_mastery`
+### J. `user_topic_mastery`
 
 Aggregated read model for dashboard and recommendations.
 
@@ -350,7 +370,7 @@ create table user_topic_mastery (
 
 ## 1.6 Jobs Domain
 
-### J. `companies`
+### K. `companies`
 
 ```sql
 create table companies (
@@ -365,7 +385,7 @@ create table companies (
 );
 ```
 
-### K. `jobs`
+### L. `jobs`
 
 ```sql
 create table jobs (
@@ -390,7 +410,7 @@ create table jobs (
 );
 ```
 
-### L. `job_parses`
+### M. `job_parses`
 
 AI-extracted structure from the raw JD.
 
@@ -412,7 +432,7 @@ create table job_parses (
 );
 ```
 
-### M. `user_jobs`
+### N. `user_jobs`
 
 User-specific tracking.
 
@@ -432,7 +452,7 @@ create table user_jobs (
 );
 ```
 
-### N. `job_gap_analyses`
+### O. `job_gap_analyses`
 
 ```sql
 create table job_gap_analyses (
@@ -451,7 +471,7 @@ create table job_gap_analyses (
 
 ## 1.7 CV / Resume Domain
 
-### O. `cv_documents`
+### P. `cv_documents`
 
 Logical CV container.
 
@@ -466,7 +486,7 @@ create table cv_documents (
 );
 ```
 
-### P. `cv_versions`
+### Q. `cv_versions`
 
 Versioned CV outputs.
 
@@ -517,7 +537,7 @@ create table cv_versions (
 }
 ```
 
-### Q. `cv_feedback`
+### R. `cv_feedback`
 
 Optional quality pass.
 
@@ -537,7 +557,7 @@ create table cv_feedback (
 
 ## 1.8 Knowledge Vault
 
-### R. `knowledge_items`
+### S. `knowledge_items`
 
 ```sql
 create table knowledge_items (
@@ -554,7 +574,7 @@ create table knowledge_items (
 );
 ```
 
-### S. `knowledge_summaries`
+### T. `knowledge_summaries`
 
 ```sql
 create table knowledge_summaries (
@@ -571,7 +591,7 @@ create table knowledge_summaries (
 
 ## 1.9 AI Traceability
 
-### T. `ai_workflows`
+### U. `ai_workflows`
 
 Top-level execution log.
 
@@ -590,7 +610,7 @@ create table ai_workflows (
 );
 ```
 
-### U. `ai_artifacts`
+### V. `ai_artifacts`
 
 Stores AI-generated outputs by type.
 
@@ -609,7 +629,7 @@ create table ai_artifacts (
 );
 ```
 
-### V. `ai_prompt_versions`
+### W. `ai_prompt_versions`
 
 Critical for reproducibility.
 
@@ -631,7 +651,7 @@ create table ai_prompt_versions (
 
 If you add vector search later:
 
-### W. `document_embeddings`
+### X. `document_embeddings`
 
 ```sql
 create table document_embeddings (
@@ -680,6 +700,7 @@ create index idx_knowledge_items_content_fts
 ## 1.12 Relationship Summary
 
 - `users` 1—1 `user_profiles`
+- `users` 1—1 `user_preferences`
 - `users` 1—N `user_skills`
 - `users` 1—N `goals`
 - `users` 1—N `exercise_attempts`
