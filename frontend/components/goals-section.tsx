@@ -18,6 +18,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
   const [draft, setDraft] = useState({
     title: "",
     targetDate: "",
+    horizon: "medium",
     priority: "2",
     status: "active",
     description: "",
@@ -61,6 +62,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
         title: draft.title,
         description: draft.description || null,
         targetDate: draft.targetDate || null,
+        horizon: draft.horizon,
         priority: Number(draft.priority),
         status: draft.status,
       });
@@ -69,6 +71,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
       setDraft({
         title: "",
         targetDate: "",
+        horizon: "medium",
         priority: "2",
         status: "active",
         description: "",
@@ -96,6 +99,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
         title: goal.title,
         description: goal.description,
         targetDate: goal.targetDate,
+        horizon: goal.horizon,
         priority: goal.priority,
         status: goal.status,
       });
@@ -163,6 +167,17 @@ export function GoalsSection({ className }: GoalsSectionProps) {
           />
         </label>
         <label className="field">
+          <span>Horizon</span>
+          <select
+            value={draft.horizon}
+            onChange={(event) => setDraft((current) => ({ ...current, horizon: event.target.value }))}
+          >
+            <option value="short">Short term</option>
+            <option value="medium">Medium term</option>
+            <option value="long">Long term</option>
+          </select>
+        </label>
+        <label className="field">
           <span>Priority</span>
           <select
             value={draft.priority}
@@ -214,7 +229,7 @@ export function GoalsSection({ className }: GoalsSectionProps) {
             <div className="goal-card-topline">
               <strong>{goal.title}</strong>
               <span>
-                {goal.status} · Priority {goal.priority}
+                {goal.status} · {goal.horizon} term · Priority {goal.priority}
               </span>
             </div>
             {editingGoalId === goal.id ? (
@@ -232,6 +247,17 @@ export function GoalsSection({ className }: GoalsSectionProps) {
                     value={goal.targetDate ?? ""}
                     onChange={(event) => updateGoalField(goal.id, "targetDate", event.target.value || null)}
                   />
+                </label>
+                <label className="field">
+                  <span>Horizon</span>
+                  <select
+                    value={goal.horizon}
+                    onChange={(event) => updateGoalField(goal.id, "horizon", event.target.value)}
+                  >
+                    <option value="short">Short term</option>
+                    <option value="medium">Medium term</option>
+                    <option value="long">Long term</option>
+                  </select>
                 </label>
                 <label className="field">
                   <span>Priority</span>

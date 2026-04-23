@@ -10,6 +10,7 @@ class GoalBase(ApiSchema):
     title: str
     description: str | None = None
     target_date: date | None = None
+    horizon: str = Field(default="medium", pattern="^(short|medium|long)$")
     priority: int = Field(default=3, ge=1, le=5)
     status: str = "active"
 

@@ -56,6 +56,7 @@ export type Goal = {
   title: string;
   description: string | null;
   targetDate: string | null;
+  horizon: string;
   priority: number;
   status: string;
 };
