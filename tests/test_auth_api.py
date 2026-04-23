@@ -158,3 +158,33 @@ def test_get_me_returns_authenticated_user():
             "fullName": "Andre Butuc",
         }
     }
+
+
+def test_put_me_updates_authenticated_user():
+    user = SimpleNamespace(
+        id=uuid.uuid4(),
+        email="andre@example.com",
+        full_name="Andre Butuc",
+    )
+    fake_session = _FakeSession(users=[user])
+
+    def override_get_db_session():
+        yield fake_session
+
+    app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = lambda: user
+
+    with TestClient(app) as client:
+        response = client.put(
+            "/api/v1/auth/me",
+            json={
+                "fullName": "Andre A. Butuc",
+            },
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["data"]["fullName"] == "Andre A. Butuc"
+    assert user.full_name == "Andre A. Butuc"
+    assert fake_session.committed is True
