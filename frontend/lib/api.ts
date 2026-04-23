@@ -70,6 +70,59 @@ export type Preferences = {
   targetOpportunityFilters: Record<string, unknown>;
 };
 
+export type ExerciseSummary = {
+  id: string;
+  type: string;
+  topic: string;
+  difficulty: string;
+  title: string;
+  createdAt: string;
+};
+
+export type Exercise = {
+  id: string;
+  type: string;
+  topic: string;
+  subtopic: string | null;
+  difficulty: string;
+  title: string;
+  promptMarkdown: string;
+  constraints: Record<string, unknown>;
+  expectedOutcomes: string[];
+  hints: string[];
+  tags: string[];
+  createdAt: string | null;
+};
+
+export type ExerciseAttempt = {
+  id: string;
+  exerciseId: string;
+  status: string;
+  answerMarkdown: string | null;
+  answerCode: string | null;
+  answerSql: string | null;
+  answerJson: Record<string, unknown>;
+  submittedAt: string | null;
+  evaluatedAt: string | null;
+};
+
+export type ExerciseEvaluation = {
+  overallScore: number;
+  rubricScores: Record<string, number>;
+  strengths: string[];
+  weaknesses: string[];
+  feedbackMarkdown: string;
+  recommendedNextTopics: string[];
+  improvementActions: Array<{ action: string; why: string }>;
+};
+
+export type TopicMastery = {
+  topic: string;
+  attemptsCount: number;
+  averageScore: number;
+  weakestDimension: string | null;
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
 
@@ -168,4 +221,41 @@ export const api = {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
+  generateExercise: (payload: {
+    type: string;
+    topic: string;
+    subtopic?: string;
+    difficulty: string;
+    timeLimitMinutes: number;
+    includeHints: boolean;
+    context: {
+      targetRole?: string | null;
+      weakTopics: string[];
+    };
+  }) =>
+    request<{ data: { exercise: Exercise } }>("/exercises/generate", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  listExercises: () => request<{ data: ExerciseSummary[]; meta: Record<string, number> }>("/exercises"),
+  getExercise: (exerciseId: string) => request<{ data: Exercise }>(`/exercises/${exerciseId}`),
+  createAttempt: (
+    exerciseId: string,
+    payload: {
+      answerMarkdown?: string | null;
+      answerCode?: string | null;
+      answerSql?: string | null;
+      answerJson?: Record<string, unknown>;
+      submit: boolean;
+    },
+  ) =>
+    request<{ data: { attempt: ExerciseAttempt } }>(`/exercises/${exerciseId}/attempts`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  evaluateAttempt: (attemptId: string) =>
+    request<{ data: ExerciseEvaluation }>(`/exercise-attempts/${attemptId}/evaluate`, {
+      method: "POST",
+    }),
+  getTopicMastery: () => request<{ data: TopicMastery[] }>("/topic-mastery"),
 };
