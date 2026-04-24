@@ -715,6 +715,55 @@ a {
   border-radius: var(--radius-lg);
 }
 
+.loading-panel-skeleton {
+  overflow: hidden;
+}
+
+.skeleton-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 28px;
+}
+
+.skeleton-line,
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.skeleton-line::after,
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(104, 240, 216, 0.18), transparent);
+  animation: skeleton-sweep 1.35s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 18px;
+}
+
+.skeleton-line-wide {
+  grid-column: 1 / -1;
+  max-width: 680px;
+}
+
+.skeleton-card {
+  min-height: 156px;
+  border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @media (max-width: 980px) {
   .app-shell-header,
   .auth-panel,
@@ -743,7 +792,8 @@ a {
   }
 
   .workspace-card-wide,
-  .field-wide {
+  .field-wide,
+  .skeleton-line-wide {
     grid-column: auto;
   }
 

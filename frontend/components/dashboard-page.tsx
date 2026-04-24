@@ -42,9 +42,15 @@ export function DashboardPage() {
 
   if (isLoading || !summary) {
     return (
-      <section className="loading-panel">
+      <section className="loading-panel loading-panel-skeleton">
         <p className="eyebrow">Dashboard</p>
         <h1>Loading daily cockpit.</h1>
+        <div className="skeleton-grid" aria-hidden="true">
+          <span className="skeleton-line skeleton-line-wide" />
+          <span className="skeleton-line" />
+          <span className="skeleton-card" />
+          <span className="skeleton-card" />
+        </div>
       </section>
     );
   }
