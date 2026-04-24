@@ -132,6 +132,14 @@ export type DashboardSummary = {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
+const READ_CACHE_TTL_MS = 4_000;
+
+type ReadCacheEntry = {
+  expiresAt: number;
+  promise: Promise<unknown>;
+};
+
+const readCache = new Map<string, ReadCacheEntry>();
 
 export class ApiError extends Error {
   readonly status: number;
@@ -171,6 +179,36 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+function clearReadCache() {
+  readCache.clear();
+}
+
+function cachedGet<T>(path: string): Promise<T> {
+  const token = getStoredToken() ?? "anonymous";
+  const cacheKey = `${token}:${path}`;
+  const cached = readCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.promise as Promise<T>;
+  }
+
+  const promise = request<T>(path).catch((error) => {
+    readCache.delete(cacheKey);
+    throw error;
+  });
+  readCache.set(cacheKey, {
+    expiresAt: Date.now() + READ_CACHE_TTL_MS,
+    promise,
+  });
+  return promise;
+}
+
+async function mutatingRequest<T>(path: string, init: RequestInit): Promise<T> {
+  const response = await request<T>(path, init);
+  clearReadCache();
+  return response;
+}
+
 export const api = {
   register: async (payload: { email: string; password: string; fullName?: string }) => {
     const response = await request<{ data: AuthPayload }>("/auth/register", {
@@ -179,6 +217,7 @@ export const api = {
     });
     setStoredToken(response.data.token);
     setStoredUser(response.data.user);
+    clearReadCache();
     return response;
   },
   login: async (payload: { email: string; password: string }) => {
@@ -188,49 +227,50 @@ export const api = {
     });
     setStoredToken(response.data.token);
     setStoredUser(response.data.user);
+    clearReadCache();
     return response;
   },
-  getMe: () => request<{ data: AuthUser }>("/auth/me"),
+  getMe: () => cachedGet<{ data: AuthUser }>("/auth/me"),
   updateMe: (payload: { fullName: string | null }) =>
-    request<{ data: AuthUser }>("/auth/me", {
+    mutatingRequest<{ data: AuthUser }>("/auth/me", {
       method: "PUT",
       body: JSON.stringify(payload),
     }).then((response) => {
       setStoredUser(response.data);
       return response;
     }),
-  getDashboardSummary: () => request<{ data: DashboardSummary }>("/dashboard/summary"),
-  getProfile: () => request<{ data: Profile }>("/profile"),
+  getDashboardSummary: () => cachedGet<{ data: DashboardSummary }>("/dashboard/summary"),
+  getProfile: () => cachedGet<{ data: Profile }>("/profile"),
   saveProfile: (payload: Partial<Profile>) =>
-    request<{ data: { updated: boolean } }>("/profile", {
+    mutatingRequest<{ data: { updated: boolean } }>("/profile", {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
-  getSkillCatalog: () => request<{ data: SkillCatalogItem[] }>("/skills/catalog"),
-  getUserSkills: () => request<{ data: UserSkill[] }>("/skills/me"),
+  getSkillCatalog: () => cachedGet<{ data: SkillCatalogItem[] }>("/skills/catalog"),
+  getUserSkills: () => cachedGet<{ data: UserSkill[] }>("/skills/me"),
   saveUserSkills: (payload: { skills: Array<{ skillId: string; selfAssessedLevel: string }> }) =>
-    request<{ data: { updatedCount: number } }>("/skills/me", {
+    mutatingRequest<{ data: { updatedCount: number } }>("/skills/me", {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
-  getGoals: () => request<{ data: Goal[] }>("/goals"),
+  getGoals: () => cachedGet<{ data: Goal[] }>("/goals"),
   createGoal: (payload: Omit<Goal, "id" | "userId">) =>
-    request<{ data: Goal }>("/goals", {
+    mutatingRequest<{ data: Goal }>("/goals", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
   updateGoal: (goalId: string, payload: Omit<Goal, "id" | "userId">) =>
-    request<{ data: Goal }>(`/goals/${goalId}`, {
+    mutatingRequest<{ data: Goal }>(`/goals/${goalId}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
   deleteGoal: (goalId: string) =>
-    request<{ data: { deleted: boolean } }>(`/goals/${goalId}`, {
+    mutatingRequest<{ data: { deleted: boolean } }>(`/goals/${goalId}`, {
       method: "DELETE",
     }),
-  getPreferences: () => request<{ data: Preferences }>("/preferences"),
+  getPreferences: () => cachedGet<{ data: Preferences }>("/preferences"),
   savePreferences: (payload: Partial<Preferences>) =>
-    request<{ data: { updated: boolean } }>("/preferences", {
+    mutatingRequest<{ data: { updated: boolean } }>("/preferences", {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
@@ -246,12 +286,12 @@ export const api = {
       weakTopics: string[];
     };
   }) =>
-    request<{ data: { exercise: Exercise } }>("/exercises/generate", {
+    mutatingRequest<{ data: { exercise: Exercise } }>("/exercises/generate", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  listExercises: () => request<{ data: ExerciseSummary[]; meta: Record<string, number> }>("/exercises"),
-  getExercise: (exerciseId: string) => request<{ data: Exercise }>(`/exercises/${exerciseId}`),
+  listExercises: () => cachedGet<{ data: ExerciseSummary[]; meta: Record<string, number> }>("/exercises"),
+  getExercise: (exerciseId: string) => cachedGet<{ data: Exercise }>(`/exercises/${exerciseId}`),
   createAttempt: (
     exerciseId: string,
     payload: {
@@ -262,13 +302,13 @@ export const api = {
       submit: boolean;
     },
   ) =>
-    request<{ data: { attempt: ExerciseAttempt } }>(`/exercises/${exerciseId}/attempts`, {
+    mutatingRequest<{ data: { attempt: ExerciseAttempt } }>(`/exercises/${exerciseId}/attempts`, {
       method: "POST",
       body: JSON.stringify(payload),
     }),
   evaluateAttempt: (attemptId: string) =>
-    request<{ data: ExerciseEvaluation }>(`/exercise-attempts/${attemptId}/evaluate`, {
+    mutatingRequest<{ data: ExerciseEvaluation }>(`/exercise-attempts/${attemptId}/evaluate`, {
       method: "POST",
     }),
-  getTopicMastery: () => request<{ data: TopicMastery[] }>("/topic-mastery"),
+  getTopicMastery: () => cachedGet<{ data: TopicMastery[] }>("/topic-mastery"),
 };
