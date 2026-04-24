@@ -374,6 +374,14 @@ export function LearningGymSection({ className }: LearningGymSectionProps) {
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
+                  <h4>Improvement plan</h4>
+                  <ul className="plain-list">
+                    {evaluation.improvementActions.map((item) => (
+                      <li key={`${item.action}-${item.why}`}>
+                        <strong>{item.action}:</strong> {item.why}
+                      </li>
+                    ))}
+                  </ul>
                   <h4>Recommended next topics</h4>
                   <div className="exercise-badges">
                     {evaluation.recommendedNextTopics.map((topic) => (

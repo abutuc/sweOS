@@ -159,13 +159,18 @@ def evaluate_attempt(attempt: ExerciseAttempt) -> dict[str, Any]:
             f"Your submission scored **{overall_score}/10** overall.\n\n"
             f"Strongest area: **{max(rubric_scores, key=rubric_scores.get)}**.\n"
             f"Primary gap: **{weakest_dimension}**.\n\n"
-            "Tighten the explanation, justify trade-offs more explicitly, and ground the answer in concrete engineering choices."
+            "Improved solution direction: restate the requirement, name the core design or algorithm, justify the main trade-off, "
+            "and finish with concrete validation or monitoring steps."
         ),
         "recommended_next_topics": recommended_next_topics,
         "improvement_actions_json": [
             {
                 "action": f"Rework the answer focusing on {weakest_dimension}",
                 "why": "That is the lowest-scoring rubric dimension.",
+            },
+            {
+                "action": "Add an explicit validation step",
+                "why": "A stronger answer explains how the proposed solution is tested or monitored in practice.",
             }
         ],
         "weakest_dimension": weakest_dimension,
