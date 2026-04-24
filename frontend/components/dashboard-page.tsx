@@ -1,29 +1,33 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { api, type ExerciseSummary, type Goal, type TopicMastery } from "@/lib/api";
-import { useOnboardingStatus } from "@/components/use-onboarding-status";
+import { api, type DashboardSummary } from "@/lib/api";
+import { isProfileOnboardingComplete } from "@/lib/onboarding";
 
 export function DashboardPage() {
-  const { profile, isLoading: isProfileLoading } = useOnboardingStatus({ redirectIfIncomplete: true });
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [exercises, setExercises] = useState<ExerciseSummary[]>([]);
-  const [topicMastery, setTopicMastery] = useState<TopicMastery[]>([]);
+  const router = useRouter();
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
 
-    void Promise.all([api.getGoals(), api.listExercises(), api.getTopicMastery()])
-      .then(([goalsResponse, exercisesResponse, masteryResponse]) => {
+    void api
+      .getDashboardSummary()
+      .then((response) => {
         if (!active) {
           return;
         }
-        setGoals(goalsResponse.data);
-        setExercises(exercisesResponse.data);
-        setTopicMastery(masteryResponse.data);
+
+        if (!isProfileOnboardingComplete(response.data.profile)) {
+          router.replace("/onboarding");
+          return;
+        }
+
+        setSummary(response.data);
       })
       .finally(() => {
         if (active) {
@@ -34,9 +38,9 @@ export function DashboardPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [router]);
 
-  if (isProfileLoading || isLoading) {
+  if (isLoading || !summary) {
     return (
       <section className="loading-panel">
         <p className="eyebrow">Dashboard</p>
@@ -44,6 +48,8 @@ export function DashboardPage() {
       </section>
     );
   }
+
+  const { profile, goals, exercises, topicMastery } = summary;
 
   return (
     <>
