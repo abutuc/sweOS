@@ -1,9 +1,8 @@
-from decimal import Decimal
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db_session, require_current_user
+from app.api.profile_defaults import empty_profile_for
 from app.models.exercise import Exercise
 from app.models.user import User
 from app.models.user_profile import UserProfile
@@ -14,27 +13,6 @@ from app.schemas.profile import ProfileRead
 
 
 router = APIRouter(prefix="/learning", tags=["learning"])
-
-
-def _empty_profile(user: User) -> ProfileRead:
-    return ProfileRead(
-        user_id=user.id,
-        headline=None,
-        bio=None,
-        years_experience=Decimal("0.0"),
-        current_role=None,
-        stack=[],
-        target_role=None,
-        target_roles=[],
-        target_seniority=None,
-        preferred_industries=[],
-        preferred_locations=[],
-        preferred_work_modes=[],
-        salary_expectation_min=None,
-        salary_expectation_max=None,
-        learning_goals=[],
-        summary=None,
-    )
 
 
 @router.get("/summary", response_model=LearningSummaryEnvelope)
@@ -59,7 +37,7 @@ def get_learning_summary(
 
     return LearningSummaryEnvelope(
         data=LearningSummary(
-            profile=ProfileRead.model_validate(profile) if profile else _empty_profile(user),
+            profile=ProfileRead.model_validate(profile) if profile else empty_profile_for(user),
             exercises=[ExerciseSummary.model_validate(exercise) for exercise in exercises],
             topic_mastery=[TopicMasteryRead.model_validate(item) for item in topic_mastery],
         )
