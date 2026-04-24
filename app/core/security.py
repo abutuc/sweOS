@@ -28,7 +28,11 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, password_hash_value: str) -> bool:
-    algorithm, iteration_count, encoded_salt, encoded_hash = password_hash_value.split("$", maxsplit=3)
+    try:
+        algorithm, iteration_count, encoded_salt, encoded_hash = password_hash_value.split("$", maxsplit=3)
+    except ValueError:
+        return False
+
     if algorithm != f"pbkdf2_{PBKDF2_DIGEST}":
         return False
 

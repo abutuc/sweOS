@@ -129,6 +129,38 @@ def test_login_returns_user_and_token(monkeypatch):
     assert response.json()["data"]["user"]["email"] == "andre@example.com"
 
 
+def test_login_normalizes_email_before_lookup(monkeypatch):
+    user = SimpleNamespace(
+        id=uuid.uuid4(),
+        email="andre@example.com",
+        password_hash="hashed",
+        full_name="Andre Butuc",
+    )
+    fake_session = _FakeSession(users=[user])
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr("app.api.auth.User", _FakeUserModel)
+    monkeypatch.setattr("app.api.auth.verify_password", lambda password, _: password == "StrongPass1")
+    monkeypatch.setattr("app.api.auth.create_access_token", lambda subject: f"token::{subject}")
+    app.dependency_overrides[get_db_session] = override_get_db_session
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/auth/login",
+            json={
+                "email": "  ANDRE@example.com  ",
+                "password": "StrongPass1",
+            },
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["data"]["user"]["email"] == "andre@example.com"
+
+
 def test_profile_requires_bearer_token():
     with TestClient(app) as client:
         response = client.get("/api/v1/profile")

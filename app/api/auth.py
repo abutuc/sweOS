@@ -19,19 +19,24 @@ from app.schemas.auth import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def _normalize_email(email: str) -> str:
+    return email.strip().lower()
+
+
 @router.post("/register", response_model=AuthEnvelope)
 def register(
     payload: AuthRegisterRequest,
     db: Session = Depends(get_db_session),
 ) -> AuthEnvelope:
-    existing_user = db.query(User).filter(User.email == payload.email).one_or_none()
+    email = _normalize_email(str(payload.email))
+    existing_user = db.query(User).filter(User.email == email).one_or_none()
     if existing_user is not None:
         raise HTTPException(status_code=409, detail="Email already registered")
 
     user = User(
-        email=payload.email,
+        email=email,
         password_hash=hash_password(payload.password),
-        full_name=payload.full_name,
+        full_name=payload.full_name.strip() if payload.full_name else None,
     )
     db.add(user)
     db.commit()
@@ -51,7 +56,8 @@ def login(
     payload: AuthLoginRequest,
     db: Session = Depends(get_db_session),
 ) -> AuthEnvelope:
-    user = db.query(User).filter(User.email == payload.email).one_or_none()
+    email = _normalize_email(str(payload.email))
+    user = db.query(User).filter(User.email == email).one_or_none()
     if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
