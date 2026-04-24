@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { AuthContextProvider } from "@/components/auth-context";
 import { AuthPanel } from "@/components/auth-panel";
 import { api, ApiError, type AuthUser } from "@/lib/api";
+import { isProfileOnboardingComplete } from "@/lib/onboarding";
 import { clearStoredToken, getStoredToken, getStoredUser } from "@/lib/session";
 
 type AppShellProps = {
@@ -57,9 +58,20 @@ export function AppShell({ children }: AppShellProps) {
       });
   }, []);
 
-  const handleAuthenticated = (nextUser: AuthUser) => {
+  const handleAuthenticated = async (nextUser: AuthUser, mode: "login" | "register") => {
     setUser(nextUser);
-    router.replace("/onboarding");
+
+    if (mode === "register") {
+      router.replace("/onboarding");
+      return;
+    }
+
+    try {
+      const response = await api.getProfile();
+      router.replace(isProfileOnboardingComplete(response.data) ? "/" : "/onboarding");
+    } catch {
+      router.replace("/onboarding");
+    }
   };
 
   const handleLogout = () => {

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { api, ApiError, type AuthUser } from "@/lib/api";
 
 type AuthPanelProps = {
-  onAuthenticated: (user: AuthUser) => void;
+  onAuthenticated: (user: AuthUser, mode: "login" | "register") => void;
 };
 
 export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
@@ -24,10 +24,14 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
 
     try {
       const response = isRegister
-        ? await api.register({ email, password, fullName: fullName || undefined })
-        : await api.login({ email, password });
+        ? await api.register({
+            email: email.trim(),
+            password,
+            fullName: fullName.trim() || undefined,
+          })
+        : await api.login({ email: email.trim(), password });
 
-      onAuthenticated(response.data.user);
+      onAuthenticated(response.data.user, mode);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
