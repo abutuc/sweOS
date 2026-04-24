@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { AuthContextProvider } from "@/components/auth-context";
 import { AuthPanel } from "@/components/auth-panel";
 import { api, ApiError, type AuthUser } from "@/lib/api";
-import { clearStoredToken, getStoredToken } from "@/lib/session";
+import { clearStoredToken, getStoredToken, getStoredUser } from "@/lib/session";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -34,6 +34,12 @@ export function AppShell({ children }: AppShellProps) {
       return;
     }
 
+    const cachedUser = getStoredUser();
+    if (cachedUser) {
+      setUser(cachedUser);
+      setIsBootstrapping(false);
+    }
+
     void api
       .getMe()
       .then((response) => {
@@ -45,7 +51,9 @@ export function AppShell({ children }: AppShellProps) {
         }
       })
       .finally(() => {
-        setIsBootstrapping(false);
+        if (!cachedUser) {
+          setIsBootstrapping(false);
+        }
       });
   }, []);
 

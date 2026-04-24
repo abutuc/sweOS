@@ -1,4 +1,4 @@
-import { getStoredToken, setStoredToken } from "@/lib/session";
+import { getStoredToken, setStoredToken, setStoredUser } from "@/lib/session";
 
 export type AuthUser = {
   id: string;
@@ -171,6 +171,7 @@ export const api = {
       body: JSON.stringify(payload),
     });
     setStoredToken(response.data.token);
+    setStoredUser(response.data.user);
     return response;
   },
   login: async (payload: { email: string; password: string }) => {
@@ -179,6 +180,7 @@ export const api = {
       body: JSON.stringify(payload),
     });
     setStoredToken(response.data.token);
+    setStoredUser(response.data.user);
     return response;
   },
   getMe: () => request<{ data: AuthUser }>("/auth/me"),
@@ -186,6 +188,9 @@ export const api = {
     request<{ data: AuthUser }>("/auth/me", {
       method: "PUT",
       body: JSON.stringify(payload),
+    }).then((response) => {
+      setStoredUser(response.data);
+      return response;
     }),
   getProfile: () => request<{ data: Profile }>("/profile"),
   saveProfile: (payload: Partial<Profile>) =>
