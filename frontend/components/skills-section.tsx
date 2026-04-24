@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 
 import { api, type SkillCatalogItem, type UserSkill } from "@/lib/api";
 
@@ -17,6 +17,8 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const deferredSearch = useDeferredValue(search);
+  const deferredCategory = useDeferredValue(category);
 
   useEffect(() => {
     let active = true;
@@ -49,11 +51,12 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const trackedSkillIds = new Set(userSkills.map((skill) => skill.skillId));
   const categories = ["all", ...new Set(catalog.map((skill) => skill.category))];
   const visibleCatalog = catalog.filter((skill) => {
-    const matchesCategory = category === "all" || skill.category === category;
+    const normalizedSearch = deferredSearch.trim().toLowerCase();
+    const matchesCategory = deferredCategory === "all" || skill.category === deferredCategory;
     const matchesSearch =
-      search.trim().length === 0 ||
-      skill.name.toLowerCase().includes(search.toLowerCase()) ||
-      skill.slug.toLowerCase().includes(search.toLowerCase());
+      normalizedSearch.length === 0 ||
+      skill.name.toLowerCase().includes(normalizedSearch) ||
+      skill.slug.toLowerCase().includes(normalizedSearch);
 
     return matchesCategory && matchesSearch;
   });
