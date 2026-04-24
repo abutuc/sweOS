@@ -12,7 +12,7 @@ from tests.migration_utils import upgrade_to_head
 @pytest.mark.integration
 def test_get_skills_catalog_returns_seeded_rows(integration_client, db_session_factory):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     db: Session = db_session_factory()
     try:
@@ -43,7 +43,7 @@ def test_put_and_get_my_skills_round_trip(
     auth_headers,
 ):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     skill_id = uuid.uuid4()
     db: Session = db_session_factory()

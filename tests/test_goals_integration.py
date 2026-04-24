@@ -14,7 +14,7 @@ def test_get_goals_returns_persisted_goals(
     auth_headers,
 ):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     db: Session = db_session_factory()
     try:
@@ -40,7 +40,7 @@ def test_get_goals_returns_persisted_goals(
 @pytest.mark.integration
 def test_create_goal_persists_goal(integration_client, db_session_factory, authenticated_user, auth_headers):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     response = integration_client.post(
         "/api/v1/goals",
@@ -73,7 +73,7 @@ def test_update_goal_persists_changes(
     auth_headers,
 ):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     db: Session = db_session_factory()
     try:
@@ -122,7 +122,7 @@ def test_delete_goal_removes_row(
     auth_headers,
 ):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     db: Session = db_session_factory()
     try:

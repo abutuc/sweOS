@@ -9,14 +9,17 @@ from app.core.tokens import create_access_token
 from app.api.dependencies import get_db_session
 from app.main import app
 from app.models.user import User
-from tests.db_utils import is_database_available, reset_public_schema
+from tests.db_utils import ensure_database_exists, is_database_available, reset_public_schema
 from tests.migration_utils import upgrade_to_head
 
 
 @pytest.fixture(scope="session")
 def integration_engine():
     settings = get_settings()
-    engine = create_engine(settings.database_url, future=True)
+    if settings.test_database_url == settings.database_url:
+        raise RuntimeError("TEST_DATABASE_URL must not point at the application DATABASE_URL")
+    ensure_database_exists(settings.test_database_url)
+    engine = create_engine(settings.test_database_url, future=True)
     try:
         yield engine
     finally:
@@ -55,7 +58,7 @@ def integration_client(db_session_factory):
 @pytest.fixture
 def authenticated_user(db_session_factory):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     db = db_session_factory()
     try:

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     app_name: str = "sweOS API"
     api_v1_prefix: str = "/api/v1"
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/sweos"
+    test_database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/sweos_test"
     jwt_secret_key: str = "change-me-for-production"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 12

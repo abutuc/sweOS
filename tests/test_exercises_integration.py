@@ -12,7 +12,7 @@ from tests.migration_utils import upgrade_to_head
 @pytest.mark.integration
 def test_generate_and_list_exercises(integration_client, db_session_factory, authenticated_user, auth_headers):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     generate_response = integration_client.post(
         "/api/v1/exercises/generate",
@@ -49,7 +49,7 @@ def test_create_and_evaluate_attempt_updates_mastery(
     auth_headers,
 ):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     db: Session = db_session_factory()
     try:

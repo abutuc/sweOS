@@ -14,7 +14,7 @@ def test_get_preferences_returns_persisted_preferences(
     auth_headers,
 ):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     db: Session = db_session_factory()
     try:
@@ -48,7 +48,7 @@ def test_put_preferences_persists_preferences(
     auth_headers,
 ):
     settings = get_settings()
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     response = integration_client.put(
         "/api/v1/preferences",

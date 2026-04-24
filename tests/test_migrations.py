@@ -13,7 +13,7 @@ def test_alembic_upgrade_creates_epic1_tables(integration_engine):
         pytest.skip("Postgres is not reachable at the configured database URL")
     reset_public_schema(integration_engine)
 
-    upgrade_to_head(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
 
     inspector = inspect(integration_engine)
     table_names = set(inspector.get_table_names())
@@ -40,8 +40,8 @@ def test_alembic_downgrade_removes_epic1_tables(integration_engine):
         pytest.skip("Postgres is not reachable at the configured database URL")
     reset_public_schema(integration_engine)
 
-    upgrade_to_head(settings.database_url)
-    downgrade_to_base(settings.database_url)
+    upgrade_to_head(settings.test_database_url)
+    downgrade_to_base(settings.test_database_url)
 
     inspector = inspect(integration_engine)
     table_names = set(inspector.get_table_names())
