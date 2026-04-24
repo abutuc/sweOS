@@ -123,6 +123,13 @@ export type TopicMastery = {
   weakestDimension: string | null;
 };
 
+export type DashboardSummary = {
+  profile: Profile;
+  goals: Goal[];
+  exercises: ExerciseSummary[];
+  topicMastery: TopicMastery[];
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
 
@@ -192,6 +199,7 @@ export const api = {
       setStoredUser(response.data);
       return response;
     }),
+  getDashboardSummary: () => request<{ data: DashboardSummary }>("/dashboard/summary"),
   getProfile: () => request<{ data: Profile }>("/profile"),
   saveProfile: (payload: Partial<Profile>) =>
     request<{ data: { updated: boolean } }>("/profile", {
