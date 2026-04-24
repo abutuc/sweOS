@@ -1,10 +1,59 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { LearningGymSection } from "@/components/learning-gym-section";
-import { useOnboardingStatus } from "@/components/use-onboarding-status";
+import { api, type LearningSummary } from "@/lib/api";
+import { isProfileOnboardingComplete } from "@/lib/onboarding";
 
 export function PracticePage() {
-  useOnboardingStatus({ redirectIfIncomplete: true });
+  const router = useRouter();
+  const [summary, setSummary] = useState<LearningSummary | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    void api
+      .getLearningSummary()
+      .then((response) => {
+        if (!active) {
+          return;
+        }
+
+        if (!isProfileOnboardingComplete(response.data.profile)) {
+          router.replace("/onboarding");
+          return;
+        }
+
+        setSummary(response.data);
+      })
+      .finally(() => {
+        if (active) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  if (isLoading || !summary) {
+    return (
+      <section className="loading-panel loading-panel-skeleton">
+        <p className="eyebrow">Practice</p>
+        <h1>Loading learning gym.</h1>
+        <div className="skeleton-grid" aria-hidden="true">
+          <span className="skeleton-line skeleton-line-wide" />
+          <span className="skeleton-line" />
+          <span className="skeleton-card" />
+          <span className="skeleton-card" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
@@ -17,7 +66,12 @@ export function PracticePage() {
       </section>
 
       <section className="workspace-grid">
-        <LearningGymSection className="workspace-card workspace-card-wide" />
+        <LearningGymSection
+          className="workspace-card workspace-card-wide"
+          initialExercises={summary.exercises}
+          initialTopicMastery={summary.topicMastery}
+          skipInitialLoad
+        />
       </section>
     </>
   );

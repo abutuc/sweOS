@@ -13,6 +13,9 @@ import {
 
 type LearningGymSectionProps = {
   className?: string;
+  initialExercises?: ExerciseSummary[];
+  initialTopicMastery?: TopicMastery[];
+  skipInitialLoad?: boolean;
 };
 
 const DEFAULT_DRAFT = {
@@ -24,21 +27,30 @@ const DEFAULT_DRAFT = {
   includeHints: true,
 };
 
-export function LearningGymSection({ className }: LearningGymSectionProps) {
+export function LearningGymSection({
+  className,
+  initialExercises = [],
+  initialTopicMastery = [],
+  skipInitialLoad = false,
+}: LearningGymSectionProps) {
   const [draft, setDraft] = useState(DEFAULT_DRAFT);
-  const [exercises, setExercises] = useState<ExerciseSummary[]>([]);
-  const [topicMastery, setTopicMastery] = useState<TopicMastery[]>([]);
+  const [exercises, setExercises] = useState<ExerciseSummary[]>(initialExercises);
+  const [topicMastery, setTopicMastery] = useState<TopicMastery[]>(initialTopicMastery);
   const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
   const [attempt, setAttempt] = useState<ExerciseAttempt | null>(null);
   const [evaluation, setEvaluation] = useState<ExerciseEvaluation | null>(null);
   const [answerMarkdown, setAnswerMarkdown] = useState("");
   const [answerCode, setAnswerCode] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!skipInitialLoad);
   const [isWorking, setIsWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
+    if (skipInitialLoad) {
+      return;
+    }
+
     let active = true;
 
     void Promise.all([api.listExercises(), api.getTopicMastery()])
@@ -65,7 +77,7 @@ export function LearningGymSection({ className }: LearningGymSectionProps) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [skipInitialLoad]);
 
   const weakestTopics = topicMastery.slice(0, 3).map((item) => item.topic);
 

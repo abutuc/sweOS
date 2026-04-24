@@ -130,6 +130,12 @@ export type DashboardSummary = {
   topicMastery: TopicMastery[];
 };
 
+export type LearningSummary = {
+  profile: Profile;
+  exercises: ExerciseSummary[];
+  topicMastery: TopicMastery[];
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
 const READ_CACHE_TTL_MS = 4_000;
@@ -240,6 +246,7 @@ export const api = {
       return response;
     }),
   getDashboardSummary: () => cachedGet<{ data: DashboardSummary }>("/dashboard/summary"),
+  getLearningSummary: () => cachedGet<{ data: LearningSummary }>("/learning/summary"),
   getProfile: () => cachedGet<{ data: Profile }>("/profile"),
   saveProfile: (payload: Partial<Profile>) =>
     mutatingRequest<{ data: { updated: boolean } }>("/profile", {
