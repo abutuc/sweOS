@@ -26,6 +26,8 @@ const DEFAULT_DRAFT = {
   timeLimitMinutes: "30",
   includeHints: true,
 };
+const MAX_RENDERED_EXERCISES = 30;
+const MAX_RENDERED_MASTERY_ITEMS = 20;
 
 export function LearningGymSection({
   className,
@@ -80,6 +82,8 @@ export function LearningGymSection({
   }, [skipInitialLoad]);
 
   const weakestTopics = topicMastery.slice(0, 3).map((item) => item.topic);
+  const visibleExercises = exercises.slice(0, MAX_RENDERED_EXERCISES);
+  const visibleTopicMastery = topicMastery.slice(0, MAX_RENDERED_MASTERY_ITEMS);
 
   const refreshMastery = async () => {
     const masteryResponse = await api.getTopicMastery();
@@ -271,7 +275,7 @@ export function LearningGymSection({
           <div className="learning-panel">
             <h3>History</h3>
             <div className="exercise-history">
-              {exercises.map((exercise) => (
+              {visibleExercises.map((exercise) => (
                 <button
                   className="exercise-history-item"
                   key={exercise.id}
@@ -284,6 +288,11 @@ export function LearningGymSection({
                   </span>
                 </button>
               ))}
+              {exercises.length > visibleExercises.length ? (
+                <p className="empty-state">
+                  Showing latest {visibleExercises.length} exercises. Use topic generation to continue from recent work.
+                </p>
+              ) : null}
               {exercises.length === 0 ? (
                 <p className="empty-state">No exercises yet. Generate your first one.</p>
               ) : null}
@@ -411,7 +420,7 @@ export function LearningGymSection({
             <div className="learning-panel">
               <h3>Weak topics</h3>
               <div className="mastery-list">
-                {topicMastery.map((item) => (
+                {visibleTopicMastery.map((item) => (
                   <article className="mastery-card" key={item.topic}>
                     <div className="goal-card-topline">
                       <strong>{item.topic}</strong>
@@ -423,6 +432,11 @@ export function LearningGymSection({
                     </p>
                   </article>
                 ))}
+                {topicMastery.length > visibleTopicMastery.length ? (
+                  <p className="empty-state">
+                    Showing weakest {visibleTopicMastery.length} topics to keep scrolling responsive.
+                  </p>
+                ) : null}
                 {topicMastery.length === 0 ? (
                   <p className="empty-state">Weak-topic tracking will populate after evaluations.</p>
                 ) : null}

@@ -7,6 +7,7 @@ import { api, type SkillCatalogItem, type UserSkill } from "@/lib/api";
 type SkillsSectionProps = {
   className?: string;
 };
+const MAX_VISIBLE_CATALOG_SKILLS = 80;
 
 export function SkillsSection({ className }: SkillsSectionProps) {
   const [catalog, setCatalog] = useState<SkillCatalogItem[]>([]);
@@ -50,7 +51,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
 
   const trackedSkillIds = new Set(userSkills.map((skill) => skill.skillId));
   const categories = ["all", ...new Set(catalog.map((skill) => skill.category))];
-  const visibleCatalog = catalog.filter((skill) => {
+  const matchingCatalog = catalog.filter((skill) => {
     const normalizedSearch = deferredSearch.trim().toLowerCase();
     const matchesCategory = deferredCategory === "all" || skill.category === deferredCategory;
     const matchesSearch =
@@ -60,6 +61,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
 
     return matchesCategory && matchesSearch;
   });
+  const visibleCatalog = matchingCatalog.slice(0, MAX_VISIBLE_CATALOG_SKILLS);
 
   const updateSkillLevel = (skillId: string, level: string) => {
     setUserSkills((current) =>
@@ -155,6 +157,11 @@ export function SkillsSection({ className }: SkillsSectionProps) {
           </div>
           {visibleCatalog.length === 0 ? (
             <p className="empty-state">No catalog skills match this filter.</p>
+          ) : null}
+          {matchingCatalog.length > visibleCatalog.length ? (
+            <p className="empty-state">
+              Showing first {visibleCatalog.length} matches. Refine the search to narrow the catalog.
+            </p>
           ) : null}
         </div>
         <div className="skill-pane">
