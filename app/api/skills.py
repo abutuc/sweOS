@@ -43,12 +43,10 @@ def get_my_skills(
     db: Session = Depends(get_db_session),
     user: User = Depends(require_current_user),
 ) -> UserSkillsEnvelope:
-    user_skills = (
-        db.query(UserSkill)
-        .options(joinedload(UserSkill.skill))
-        .filter(UserSkill.user_id == user.id)
-        .all()
-    )
+    query = db.query(UserSkill)
+    if hasattr(UserSkill, "skill"):
+        query = query.options(joinedload(UserSkill.skill))
+    user_skills = query.filter(UserSkill.user_id == user.id).all()
 
     items = [
         UserSkillRead(
@@ -74,6 +72,9 @@ def upsert_my_skills(
     user: User = Depends(require_current_user),
 ) -> UserSkillsUpsertEnvelope:
     skill_ids = [item.skill_id for item in payload.skills]
+    if not skill_ids:
+        return UserSkillsUpsertEnvelope(data=UserSkillsUpsertResult(updated_count=0))
+
     existing_skill_ids = {
         skill_id
         for (skill_id,) in db.query(Skill.id).filter(Skill.id.in_(skill_ids)).all()
@@ -86,13 +87,17 @@ def upsert_my_skills(
         )
 
     updated_count = 0
+    user_skills_by_skill_id = {
+        user_skill.skill_id: user_skill
+        for user_skill in (
+            db.query(UserSkill)
+            .filter(UserSkill.user_id == user.id, UserSkill.skill_id.in_(skill_ids))
+            .all()
+        )
+    }
 
     for item in payload.skills:
-        user_skill = (
-            db.query(UserSkill)
-            .filter(UserSkill.user_id == user.id, UserSkill.skill_id == item.skill_id)
-            .one_or_none()
-        )
+        user_skill = user_skills_by_skill_id.get(item.skill_id)
 
         if user_skill is None:
             user_skill = UserSkill(
@@ -101,6 +106,7 @@ def upsert_my_skills(
                 self_assessed_level=item.self_assessed_level,
             )
             db.add(user_skill)
+            user_skills_by_skill_id[item.skill_id] = user_skill
         else:
             user_skill.self_assessed_level = item.self_assessed_level
 

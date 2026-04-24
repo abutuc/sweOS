@@ -219,6 +219,9 @@ class _FakeUserSkillQuery:
     def __init__(self, user_skills):
         self._user_skills = user_skills
 
+    def options(self, *_args, **_kwargs):
+        return self
+
     def filter(self, *predicates):
         filtered = []
         for user_skill in self._user_skills:
