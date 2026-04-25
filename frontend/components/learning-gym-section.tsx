@@ -402,6 +402,14 @@ export function LearningGymSection({
                 <>
                   <p className="score-chip">Overall score: {evaluation.overallScore}/10</p>
                   <p>{evaluation.feedbackMarkdown}</p>
+                  <h4>Rubric breakdown</h4>
+                  <div className="exercise-badges">
+                    {Object.entries(evaluation.rubricScores).map(([dimension, score]) => (
+                      <span className="exercise-badge" key={dimension}>
+                        {dimension.replaceAll("_", " ")}: {score}/10
+                      </span>
+                    ))}
+                  </div>
                   <h4>Strengths</h4>
                   <ul className="plain-list">
                     {evaluation.strengths.map((item) => (
