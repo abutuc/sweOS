@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.analytics import router as analytics_router
 from app.api.auth import router as auth_router
+from app.api.cvs import router as cvs_router
 from app.api.dashboard import router as dashboard_router
 from app.api.exercises import router as exercises_router
 from app.api.goals import router as goals_router
@@ -15,6 +16,7 @@ from app.api.skills import router as skills_router
 router = APIRouter()
 router.include_router(analytics_router)
 router.include_router(auth_router)
+router.include_router(cvs_router)
 router.include_router(dashboard_router)
 router.include_router(exercises_router)
 router.include_router(goals_router)
