@@ -29,6 +29,7 @@ job_status_enum = postgresql.ENUM(
     name="job_status",
 )
 cv_version_status_enum = postgresql.ENUM("base", "tailored", "archived", name="cv_version_status")
+source_type_enum = postgresql.ENUM(name="source_type", create_type=False)
 
 
 def upgrade() -> None:
@@ -40,7 +41,7 @@ def upgrade() -> None:
         "jobs",
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("external_id", sa.String(), nullable=True),
-        sa.Column("source", sa.Enum(name="source_type"), nullable=False, server_default="manual"),
+        sa.Column("source", source_type_enum, nullable=False, server_default="manual"),
         sa.Column("source_url", sa.Text(), nullable=True),
         sa.Column("title", sa.String(), nullable=False),
         sa.Column("company_name", sa.String(), nullable=True),
