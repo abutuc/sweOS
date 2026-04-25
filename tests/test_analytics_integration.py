@@ -90,3 +90,55 @@ def test_analytics_dashboard_summarizes_progress(
     assert payload["strongTopics"][0]["topic"] == "distributed systems"
     assert payload["recentActivity"][0]["type"] == "exercise_evaluated"
     assert payload["recentActivity"][0]["title"] == "Design a distributed rate limiter"
+
+
+@pytest.mark.integration
+def test_analytics_topic_mastery_filters_by_topic(
+    integration_client,
+    db_session_factory,
+    authenticated_user,
+    auth_headers,
+):
+    settings = get_settings()
+    upgrade_to_head(settings.test_database_url)
+
+    db: Session = db_session_factory()
+    try:
+        db.add_all(
+            [
+                UserTopicMastery(
+                    user_id=authenticated_user.id,
+                    topic="distributed systems",
+                    attempts_count=2,
+                    average_score=5.25,
+                    weakest_dimension="tradeOffReasoning",
+                ),
+                UserTopicMastery(
+                    user_id=authenticated_user.id,
+                    topic="python",
+                    attempts_count=3,
+                    average_score=8.1,
+                    weakest_dimension="edgeCases",
+                ),
+            ]
+        )
+        db.commit()
+    finally:
+        db.close()
+
+    response = integration_client.get(
+        "/api/v1/analytics/topic-mastery",
+        headers=auth_headers,
+        params={"topic": "distributed systems"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"] == [
+        {
+            "topic": "distributed systems",
+            "weakestDimension": "tradeOffReasoning",
+            "masteryScore": 5.25,
+            "attemptsCount": 2,
+            "updatedAt": response.json()["data"][0]["updatedAt"],
+        }
+    ]
