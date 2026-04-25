@@ -357,12 +357,20 @@ export function LearningGymSection({
                 </div>
                 <p>{activeExercise.promptMarkdown}</p>
                 <div className="exercise-badges">
+                  {activeExercise.constraints.reviewMode === true ? (
+                    <span className="exercise-badge">review mode</span>
+                  ) : null}
                   {activeExercise.tags.map((tag) => (
                     <span className="exercise-badge" key={tag}>
                       {tag}
                     </span>
                   ))}
                 </div>
+                {activeExercise.constraints.reviewMode === true ? (
+                  <p className="empty-state">
+                    This practice intentionally resurfaces a weaker topic from your recent evaluations.
+                  </p>
+                ) : null}
                 <div className="learning-subgrid">
                   <div>
                     <h4>Expected outcomes</h4>
