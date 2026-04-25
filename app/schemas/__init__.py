@@ -9,6 +9,14 @@ from app.schemas.auth import (
     AuthUserEnvelope,
     AuthUserUpdateRequest,
 )
+from app.schemas.analytics import (
+    AnalyticsActivity,
+    AnalyticsDashboard,
+    AnalyticsDashboardEnvelope,
+    AnalyticsSummary,
+    AnalyticsTopic,
+    AnalyticsTopicMasteryEnvelope,
+)
 from app.schemas.exercise import (
     ExerciseAttemptCreateRequest,
     ExerciseAttemptEnvelope,
@@ -67,6 +75,12 @@ __all__ = [
     "AuthUser",
     "AuthUserEnvelope",
     "AuthUserUpdateRequest",
+    "AnalyticsActivity",
+    "AnalyticsDashboard",
+    "AnalyticsDashboardEnvelope",
+    "AnalyticsSummary",
+    "AnalyticsTopic",
+    "AnalyticsTopicMasteryEnvelope",
     "ExerciseAttemptCreateRequest",
     "ExerciseAttemptEnvelope",
     "ExerciseAttemptEnvelopeData",
