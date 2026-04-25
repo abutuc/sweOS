@@ -43,6 +43,7 @@ export function LearningGymSection({
   const [evaluation, setEvaluation] = useState<ExerciseEvaluation | null>(null);
   const [answerMarkdown, setAnswerMarkdown] = useState("");
   const [answerCode, setAnswerCode] = useState("");
+  const [revealedHintCount, setRevealedHintCount] = useState(0);
   const [isLoading, setIsLoading] = useState(!skipInitialLoad);
   const [isWorking, setIsWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +115,7 @@ export function LearningGymSection({
       setEvaluation(null);
       setAnswerMarkdown("");
       setAnswerCode("");
+      setRevealedHintCount(0);
       const exerciseListResponse = await api.listExercises();
       setExercises(exerciseListResponse.data);
       setNotice("Exercise generated.");
@@ -136,6 +138,7 @@ export function LearningGymSection({
       setEvaluation(null);
       setAnswerMarkdown("");
       setAnswerCode("");
+      setRevealedHintCount(0);
     } catch {
       setError("Exercise could not be loaded.");
     } finally {
@@ -173,6 +176,14 @@ export function LearningGymSection({
   const applyRecommendedTopic = (topic: string) => {
     setDraft((current) => ({ ...current, topic, subtopic: topic }));
     setNotice(`Topic preset updated to ${topic}.`);
+  };
+
+  const revealNextHint = () => {
+    if (!activeExercise) {
+      return;
+    }
+
+    setRevealedHintCount((current) => Math.min(current + 1, activeExercise.hints.length));
   };
 
   return (
@@ -331,11 +342,19 @@ export function LearningGymSection({
                   <div>
                     <h4>Hints</h4>
                     <ul className="plain-list">
-                      {activeExercise.hints.map((item) => (
+                      {activeExercise.hints.slice(0, revealedHintCount).map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
                     {activeExercise.hints.length === 0 ? <p className="empty-state">Hints disabled.</p> : null}
+                    {activeExercise.hints.length > 0 && revealedHintCount === 0 ? (
+                      <p className="empty-state">Reveal hints one at a time when you are blocked.</p>
+                    ) : null}
+                    {activeExercise.hints.length > revealedHintCount ? (
+                      <button className="ghost-button" type="button" onClick={revealNextHint}>
+                        Reveal next hint
+                      </button>
+                    ) : null}
                   </div>
                 </div>
 
