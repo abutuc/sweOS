@@ -412,7 +412,8 @@ Generates a new exercise and persists it.
       "promptMarkdown": "Design a rate limiter ...",
       "constraints": {
         "timeLimitMinutes": 30,
-        "mustConsider": ["throughput", "fairness", "burst traffic"]
+        "mustConsider": ["throughput", "fairness", "burst traffic"],
+        "reviewMode": false
       },
       "expectedOutcomes": [
         "Explains trade-offs between token bucket and sliding window",
@@ -605,7 +606,8 @@ Create draft or direct submission.
       "topic": "distributed systems",
       "attemptsCount": 2,
       "averageScore": 4.6,
-      "weakestDimension": "tradeOffReasoning"
+      "weakestDimension": "tradeOffReasoning",
+      "lastPracticedAt": "2026-04-23T12:00:00Z"
     }
   ]
 }
