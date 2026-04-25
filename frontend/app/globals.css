@@ -605,6 +605,20 @@ a {
   color: var(--muted);
 }
 
+.markdown-preview {
+  max-height: 340px;
+  overflow: auto;
+  white-space: pre-wrap;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
 .progress-bar {
   display: block;
   height: 8px;
