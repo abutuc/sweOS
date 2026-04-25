@@ -29,6 +29,18 @@ const DEFAULT_DRAFT = {
 const MAX_RENDERED_EXERCISES = 30;
 const MAX_RENDERED_MASTERY_ITEMS = 20;
 
+function formatPracticeDate(value: string | null) {
+  if (!value) {
+    return "not practiced yet";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 function difficultyForMastery(score: number) {
   if (score < 5) {
     return "easy";
@@ -498,6 +510,7 @@ export function LearningGymSection({
                       {item.attemptsCount} attempt{item.attemptsCount === 1 ? "" : "s"} · weakest dimension:{" "}
                       {item.weakestDimension ?? "n/a"}
                     </p>
+                    <p>Last practiced: {formatPracticeDate(item.lastPracticedAt)}</p>
                   </article>
                 ))}
                 {topicMastery.length > visibleTopicMastery.length ? (
