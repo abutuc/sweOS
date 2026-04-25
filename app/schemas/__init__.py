@@ -17,6 +17,16 @@ from app.schemas.analytics import (
     AnalyticsTopic,
     AnalyticsTopicMasteryEnvelope,
 )
+from app.schemas.cv import (
+    CvDocumentCreateEnvelope,
+    CvDocumentCreateRequest,
+    CvFeedbackEnvelope,
+    CvTailorEnvelope,
+    CvTailorRequest,
+    CvVersionCreateEnvelope,
+    CvVersionCreateRequest,
+    CvVersionListEnvelope,
+)
 from app.schemas.exercise import (
     ExerciseAttemptCreateRequest,
     ExerciseAttemptEnvelope,
@@ -42,6 +52,15 @@ from app.schemas.goal import (
     GoalRead,
     GoalUpdate,
     GoalsEnvelope,
+)
+from app.schemas.job import (
+    JobCreateEnvelope,
+    JobCreateRequest,
+    JobGapAnalysisEnvelope,
+    JobListEnvelope,
+    JobParseEnvelope,
+    UserJobSaveEnvelope,
+    UserJobSaveRequest,
 )
 from app.schemas.profile import (
     ProfileEnvelope,
@@ -81,6 +100,14 @@ __all__ = [
     "AnalyticsSummary",
     "AnalyticsTopic",
     "AnalyticsTopicMasteryEnvelope",
+    "CvDocumentCreateEnvelope",
+    "CvDocumentCreateRequest",
+    "CvFeedbackEnvelope",
+    "CvTailorEnvelope",
+    "CvTailorRequest",
+    "CvVersionCreateEnvelope",
+    "CvVersionCreateRequest",
+    "CvVersionListEnvelope",
     "ExerciseAttemptCreateRequest",
     "ExerciseAttemptEnvelope",
     "ExerciseAttemptEnvelopeData",
@@ -101,6 +128,11 @@ __all__ = [
     "GoalRead",
     "GoalUpdate",
     "GoalsEnvelope",
+    "JobCreateEnvelope",
+    "JobCreateRequest",
+    "JobGapAnalysisEnvelope",
+    "JobListEnvelope",
+    "JobParseEnvelope",
     "PreferenceEnvelope",
     "PreferenceRead",
     "PreferenceUpdate",
@@ -114,6 +146,8 @@ __all__ = [
     "SkillCatalogEnvelope",
     "SkillCatalogItem",
     "UserSkillRead",
+    "UserJobSaveEnvelope",
+    "UserJobSaveRequest",
     "UserSkillsEnvelope",
     "UserSkillsUpsertEnvelope",
     "UserSkillsUpsertRequest",
