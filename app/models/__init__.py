@@ -1,9 +1,11 @@
 """ORM models package."""
 
+from app.models.cv import CvDocument, CvFeedback, CvVersion, CvVersionStatus
 from app.models.exercise import DifficultyLevel, Exercise, ExerciseType, SourceType
 from app.models.exercise_attempt import ExerciseAttempt, SubmissionStatus
 from app.models.exercise_evaluation import ExerciseEvaluation
 from app.models.goal import Goal
+from app.models.job import Job, JobGapAnalysis, JobParse, JobStatus, UserJob
 from app.models.skill import Skill
 from app.models.user import User
 from app.models.user_preference import UserPreference
@@ -13,16 +15,25 @@ from app.models.user_skill import ProficiencyLevel, UserSkill
 
 __all__ = [
     "DifficultyLevel",
+    "CvDocument",
+    "CvFeedback",
+    "CvVersion",
+    "CvVersionStatus",
     "Exercise",
     "ExerciseAttempt",
     "ExerciseEvaluation",
     "ExerciseType",
     "Goal",
+    "Job",
+    "JobGapAnalysis",
+    "JobParse",
+    "JobStatus",
     "ProficiencyLevel",
     "Skill",
     "SourceType",
     "SubmissionStatus",
     "User",
+    "UserJob",
     "UserPreference",
     "UserProfile",
     "UserTopicMastery",
