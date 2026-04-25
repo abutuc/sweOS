@@ -136,6 +136,9 @@ export function DashboardPage() {
                   {item.attemptsCount} attempt{item.attemptsCount === 1 ? "" : "s"} ·{" "}
                   {item.weakestDimension ?? "no weak dimension yet"}
                 </p>
+                <span className="progress-bar" aria-label={`${item.masteryScore.toFixed(1)} out of 10 mastery`}>
+                  <span style={{ width: `${Math.min(100, item.masteryScore * 10)}%` }} />
+                </span>
               </article>
             ))}
             {analytics.weakTopics.length === 0 ? <p className="empty-state">No mastery signals yet. Complete an exercise to seed your analytics.</p> : null}
@@ -157,6 +160,9 @@ export function DashboardPage() {
                 <p>
                   {item.attemptsCount} attempt{item.attemptsCount === 1 ? "" : "s"} recorded
                 </p>
+                <span className="progress-bar" aria-label={`${item.masteryScore.toFixed(1)} out of 10 mastery`}>
+                  <span style={{ width: `${Math.min(100, item.masteryScore * 10)}%` }} />
+                </span>
               </article>
             ))}
             {analytics.strongTopics.length === 0 ? <p className="empty-state">Strong topics appear after evaluated exercises.</p> : null}

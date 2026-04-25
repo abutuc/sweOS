@@ -605,6 +605,22 @@ a {
   color: var(--muted);
 }
 
+.progress-bar {
+  display: block;
+  height: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+}
+
 .dashboard-copy {
   display: grid;
   gap: 14px;
