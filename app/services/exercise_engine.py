@@ -38,16 +38,24 @@ def build_generated_exercise(payload: ExerciseGenerateRequest, weak_topics: list
     role = payload.context.target_role or "software engineer"
     focus_topics = ", ".join(weak_topics[:2]) if weak_topics else "clear trade-off reasoning"
     subtopic = payload.subtopic or payload.topic
+    is_review_mode = bool(weak_topics) and payload.topic in weak_topics
     title = f"{_difficulty_prefix(payload.difficulty)} {payload.type.value.replace('_', ' ').title()} on {subtopic.title()}"
     prompt_markdown = (
         f"You are preparing for a **{role}** path.\n\n"
         f"Design a solution for **{subtopic}** within the context of **{payload.topic}**.\n\n"
         f"Your answer should address the requested difficulty, justify trade-offs, and show how you would approach it in a real engineering setting."
     )
+    if is_review_mode:
+        prompt_markdown += (
+            "\n\n"
+            "Review focus: this exercise intentionally resurfaces a weaker topic from your recent evaluations. "
+            "Call out what you are improving compared with a previous attempt."
+        )
     constraints_json = {
         "timeLimitMinutes": payload.time_limit_minutes,
         "mustConsider": [payload.topic, subtopic, focus_topics],
         "forbidden": ["hand-wavy reasoning", "skipping edge cases"],
+        "reviewMode": is_review_mode,
     }
     expected_outcomes_json = [
         f"Demonstrates {payload.topic} reasoning",
@@ -77,6 +85,8 @@ def build_generated_exercise(payload: ExerciseGenerateRequest, weak_topics: list
         "tradeOffs": ["clarity vs completeness", "speed vs robustness"],
     }
     tags = [payload.topic, subtopic, payload.type.value.replace("_", "-"), payload.difficulty.value]
+    if is_review_mode:
+        tags.append("review-mode")
     return GeneratedExercisePayload(
         title=title,
         prompt_markdown=prompt_markdown,
