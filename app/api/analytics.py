@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
@@ -15,6 +15,7 @@ from app.schemas.analytics import (
     AnalyticsDashboardEnvelope,
     AnalyticsSummary,
     AnalyticsTopic,
+    AnalyticsTopicMasteryEnvelope,
 )
 
 
@@ -42,6 +43,7 @@ def _serialize_topic(item: UserTopicMastery) -> AnalyticsTopic:
         weakest_dimension=item.weakest_dimension,
         mastery_score=round(item.average_score, 2),
         attempts_count=item.attempts_count,
+        updated_at=item.updated_at,
     )
 
 
@@ -104,3 +106,25 @@ def get_analytics_dashboard(
             ],
         )
     )
+
+
+@router.get("/topic-mastery", response_model=AnalyticsTopicMasteryEnvelope)
+def get_analytics_topic_mastery(
+    topic: str | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=100),
+    db: Session = Depends(get_db_session),
+    user: User = Depends(require_current_user),
+) -> AnalyticsTopicMasteryEnvelope:
+    query = db.query(UserTopicMastery).filter(UserTopicMastery.user_id == user.id)
+    if topic:
+        query = query.filter(UserTopicMastery.topic == topic)
+
+    mastery = (
+        query.order_by(
+            UserTopicMastery.average_score.asc(),
+            UserTopicMastery.attempts_count.desc(),
+        )
+        .limit(limit)
+        .all()
+    )
+    return AnalyticsTopicMasteryEnvelope(data=[_serialize_topic(item) for item in mastery])

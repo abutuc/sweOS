@@ -15,6 +15,7 @@ class AnalyticsTopic(ApiSchema):
     weakest_dimension: str | None = None
     mastery_score: float
     attempts_count: int
+    updated_at: datetime | None = None
 
 
 class AnalyticsActivity(ApiSchema):
@@ -33,3 +34,7 @@ class AnalyticsDashboard(ApiSchema):
 
 class AnalyticsDashboardEnvelope(ApiSchema):
     data: AnalyticsDashboard
+
+
+class AnalyticsTopicMasteryEnvelope(ApiSchema):
+    data: list[AnalyticsTopic]
