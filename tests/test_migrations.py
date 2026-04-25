@@ -29,6 +29,13 @@ def test_alembic_upgrade_creates_epic1_tables(integration_engine):
         "exercise_attempts",
         "exercise_evaluations",
         "user_topic_mastery",
+        "jobs",
+        "job_parses",
+        "user_jobs",
+        "job_gap_analyses",
+        "cv_documents",
+        "cv_versions",
+        "cv_feedback",
         "alembic_version",
     } <= table_names
 
@@ -57,3 +64,10 @@ def test_alembic_downgrade_removes_epic1_tables(integration_engine):
     assert "exercise_attempts" not in table_names
     assert "exercise_evaluations" not in table_names
     assert "user_topic_mastery" not in table_names
+    assert "jobs" not in table_names
+    assert "job_parses" not in table_names
+    assert "user_jobs" not in table_names
+    assert "job_gap_analyses" not in table_names
+    assert "cv_documents" not in table_names
+    assert "cv_versions" not in table_names
+    assert "cv_feedback" not in table_names
