@@ -136,6 +136,33 @@ export type LearningSummary = {
   topicMastery: TopicMastery[];
 };
 
+export type AnalyticsSummary = {
+  totalExercisesCompleted: number;
+  averageScore: number | null;
+  streakDays: number;
+};
+
+export type AnalyticsTopic = {
+  topic: string;
+  weakestDimension: string | null;
+  masteryScore: number;
+  attemptsCount: number;
+};
+
+export type AnalyticsActivity = {
+  type: string;
+  entityId: string;
+  title: string;
+  createdAt: string;
+};
+
+export type AnalyticsDashboard = {
+  summary: AnalyticsSummary;
+  weakTopics: AnalyticsTopic[];
+  strongTopics: AnalyticsTopic[];
+  recentActivity: AnalyticsActivity[];
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
 const READ_CACHE_TTL_MS = 4_000;
@@ -246,6 +273,7 @@ export const api = {
       return response;
     }),
   getDashboardSummary: () => cachedGet<{ data: DashboardSummary }>("/dashboard/summary"),
+  getAnalyticsDashboard: () => cachedGet<{ data: AnalyticsDashboard }>("/analytics/dashboard"),
   getLearningSummary: () => cachedGet<{ data: LearningSummary }>("/learning/summary"),
   getProfile: () => cachedGet<{ data: Profile }>("/profile"),
   saveProfile: (payload: Partial<Profile>) =>
