@@ -164,6 +164,71 @@ export type AnalyticsDashboard = {
   recentActivity: AnalyticsActivity[];
 };
 
+export type Job = {
+  id: string;
+  title: string;
+  companyName: string | null;
+  sourceUrl: string | null;
+  location: string | null;
+  workMode: string | null;
+  rawDescription?: string | null;
+};
+
+export type JobListItem = {
+  id: string;
+  userJobId: string | null;
+  title: string;
+  companyName: string | null;
+  location: string | null;
+  status: string | null;
+  matchScore: number | null;
+};
+
+export type JobParse = {
+  id: string;
+  parsedTitle: string | null;
+  parsedCompanyName: string | null;
+  responsibilities: string[];
+  requiredSkills: string[];
+  preferredSkills: string[];
+  keywords: string[];
+  seniorityAssessment: string | null;
+  summaryMarkdown: string | null;
+};
+
+export type JobGapAnalysis = {
+  id: string;
+  fitSummaryMarkdown: string;
+  matchedSkills: Array<{ skill: string; strength: string }>;
+  missingSkills: Array<{ skill: string; severity: string }>;
+  weakEvidence: Array<{ skill: string; issue: string }>;
+  recommendation: { applyNow?: boolean; priority?: string; nextActions?: string[] };
+};
+
+export type CvVersion = {
+  id: string;
+  status: string;
+  title: string;
+  jobId: string | null;
+  createdByAi: boolean;
+  createdAt: string;
+};
+
+export type CvTailoredVersion = {
+  id: string;
+  status: string;
+  title: string;
+  structuredContent: Record<string, unknown>;
+  renderedMarkdown: string | null;
+};
+
+export type CvFeedback = {
+  score: number | null;
+  strengths: string[];
+  weaknesses: string[];
+  suggestions: string[];
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
 const READ_CACHE_TTL_MS = 4_000;
@@ -347,4 +412,57 @@ export const api = {
       method: "POST",
     }),
   getTopicMastery: () => cachedGet<{ data: TopicMastery[] }>("/topic-mastery"),
+  createJob: (payload: {
+    title: string;
+    companyName?: string | null;
+    sourceUrl?: string | null;
+    rawDescription: string;
+    location?: string | null;
+    workMode?: string | null;
+  }) =>
+    mutatingRequest<{ data: { job: Job } }>("/jobs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  parseJob: (jobId: string) =>
+    mutatingRequest<{ data: { parse: JobParse } }>(`/jobs/${jobId}/parse`, {
+      method: "POST",
+    }),
+  listJobs: () => cachedGet<{ data: JobListItem[]; meta: Record<string, number> }>("/jobs"),
+  saveJob: (jobId: string, payload: { status: string; notes?: string | null }) =>
+    mutatingRequest<{ data: { userJobId: string; status: string } }>(`/jobs/${jobId}/save`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  analyzeJobGap: (userJobId: string) =>
+    mutatingRequest<{ data: { analysis: JobGapAnalysis } }>(`/user-jobs/${userJobId}/gap-analysis`, {
+      method: "POST",
+    }),
+  createCvDocument: (payload: { name: string; description?: string | null }) =>
+    mutatingRequest<{ data: { cvDocumentId: string } }>("/cvs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  createCvVersion: (
+    cvDocumentId: string,
+    payload: { status: string; title: string; structuredContent: Record<string, unknown> },
+  ) =>
+    mutatingRequest<{ data: { cvVersionId: string } }>(`/cvs/${cvDocumentId}/versions`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  listCvVersions: (cvDocumentId: string) =>
+    cachedGet<{ data: CvVersion[] }>(`/cvs/${cvDocumentId}/versions`),
+  tailorCv: (
+    cvDocumentId: string,
+    payload: { baseVersionId: string; jobId: string; preferences: Record<string, unknown> },
+  ) =>
+    mutatingRequest<{ data: { cvVersion: CvTailoredVersion } }>(`/cvs/${cvDocumentId}/tailor`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  createCvFeedback: (cvVersionId: string) =>
+    mutatingRequest<{ data: { feedback: CvFeedback } }>(`/cv-versions/${cvVersionId}/feedback`, {
+      method: "POST",
+    }),
 };
