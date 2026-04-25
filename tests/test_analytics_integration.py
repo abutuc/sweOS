@@ -142,3 +142,62 @@ def test_analytics_topic_mastery_filters_by_topic(
             "updatedAt": response.json()["data"][0]["updatedAt"],
         }
     ]
+
+
+@pytest.mark.integration
+def test_analytics_updates_after_submission_evaluation(
+    integration_client,
+    db_session_factory,
+    authenticated_user,
+    auth_headers,
+):
+    settings = get_settings()
+    upgrade_to_head(settings.test_database_url)
+
+    db: Session = db_session_factory()
+    try:
+        exercise = Exercise(
+            user_id=authenticated_user.id,
+            type=ExerciseType.system_design,
+            topic="caching",
+            subtopic="invalidations",
+            difficulty=DifficultyLevel.medium,
+            title="Design cache invalidation",
+            prompt_markdown="Design cache invalidation for a profile service.",
+            constraints_json={"timeLimitMinutes": 30},
+            expected_outcomes_json=["Explains consistency"],
+            hints_json=["Think about TTLs"],
+            tags=["caching"],
+        )
+        db.add(exercise)
+        db.commit()
+        db.refresh(exercise)
+        exercise_id = exercise.id
+    finally:
+        db.close()
+
+    attempt_response = integration_client.post(
+        f"/api/v1/exercises/{exercise_id}/attempts",
+        headers=auth_headers,
+        json={
+            "answerMarkdown": "I would use TTLs and event invalidation because consistency matters.",
+            "answerCode": "def invalidate(): pass",
+            "submit": True,
+        },
+    )
+    assert attempt_response.status_code == 200
+
+    evaluate_response = integration_client.post(
+        f"/api/v1/exercise-attempts/{attempt_response.json()['data']['attempt']['id']}/evaluate",
+        headers=auth_headers,
+    )
+    assert evaluate_response.status_code == 200
+
+    analytics_response = integration_client.get("/api/v1/analytics/dashboard", headers=auth_headers)
+    payload = analytics_response.json()["data"]
+
+    assert analytics_response.status_code == 200
+    assert payload["summary"]["totalExercisesCompleted"] == 1
+    assert payload["summary"]["averageScore"] == evaluate_response.json()["data"]["overallScore"]
+    assert payload["weakTopics"][0]["topic"] == "caching"
+    assert payload["recentActivity"][0]["title"] == "Design cache invalidation"
