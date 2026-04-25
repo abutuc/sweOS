@@ -112,5 +112,6 @@ def test_create_and_evaluate_attempt_updates_mastery(
         assert evaluation.overall_score > 0
         assert mastery.attempts_count == 1
         assert mastery.average_score > 0
+        assert mastery.last_practiced_at is not None
     finally:
         db.close()

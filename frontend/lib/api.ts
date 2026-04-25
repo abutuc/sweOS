@@ -121,6 +121,7 @@ export type TopicMastery = {
   attemptsCount: number;
   averageScore: number;
   weakestDimension: string | null;
+  lastPracticedAt: string | null;
 };
 
 export type DashboardSummary = {

@@ -122,6 +122,7 @@ class TopicMasteryRead(ApiSchema):
     attempts_count: int
     average_score: float
     weakest_dimension: str | None = None
+    last_practiced_at: datetime | None = None
 
 
 class TopicMasteryEnvelope(ApiSchema):

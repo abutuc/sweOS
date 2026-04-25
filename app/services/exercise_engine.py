@@ -221,6 +221,7 @@ def persist_evaluation(db: Session, attempt: ExerciseAttempt) -> ExerciseEvaluat
             attempts_count=1,
             average_score=result["overall_score"],
             weakest_dimension=result["weakest_dimension"],
+            last_practiced_at=attempt.evaluated_at,
         )
         db.add(mastery)
     else:
@@ -228,6 +229,7 @@ def persist_evaluation(db: Session, attempt: ExerciseAttempt) -> ExerciseEvaluat
         mastery.attempts_count += 1
         mastery.average_score = round(total_score / mastery.attempts_count, 2)
         mastery.weakest_dimension = result["weakest_dimension"]
+        mastery.last_practiced_at = attempt.evaluated_at
 
     db.commit()
     db.refresh(evaluation)

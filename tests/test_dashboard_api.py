@@ -159,6 +159,7 @@ def test_get_dashboard_summary_returns_daily_payload(monkeypatch):
                 attempts_count=1,
                 average_score=5.5,
                 weakest_dimension="tradeOffReasoning",
+                last_practiced_at=datetime(2026, 4, 23, 12, 0, tzinfo=timezone.utc),
             )
         ],
     )

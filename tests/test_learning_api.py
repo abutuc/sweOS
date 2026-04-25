@@ -119,6 +119,7 @@ def test_get_learning_summary_returns_profile_exercises_and_mastery(monkeypatch)
                 attempts_count=2,
                 average_score=6.0,
                 weakest_dimension="tradeOffReasoning",
+                last_practiced_at=datetime(2026, 4, 23, 12, 0, tzinfo=timezone.utc),
             )
         ],
     )

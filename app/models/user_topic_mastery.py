@@ -22,6 +22,7 @@ class UserTopicMastery(Base):
     attempts_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     average_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     weakest_dimension: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_practiced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

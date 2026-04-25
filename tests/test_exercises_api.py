@@ -339,6 +339,7 @@ def test_topic_mastery_returns_weak_topics(monkeypatch):
                 attempts_count=2,
                 average_score=4.6,
                 weakest_dimension="tradeOffReasoning",
+                last_practiced_at=datetime(2026, 4, 23, 12, 0, tzinfo=timezone.utc),
             )
         ]
     )
@@ -357,3 +358,4 @@ def test_topic_mastery_returns_weak_topics(monkeypatch):
 
     assert response.status_code == 200
     assert response.json()["data"][0]["topic"] == "distributed systems"
+    assert response.json()["data"][0]["lastPracticedAt"] == "2026-04-23T12:00:00Z"
