@@ -4,30 +4,31 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { api, type DashboardSummary } from "@/lib/api";
+import { api, type AnalyticsDashboard, type DashboardSummary } from "@/lib/api";
 import { isProfileOnboardingComplete } from "@/lib/onboarding";
 
 export function DashboardPage() {
   const router = useRouter();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
 
-    void api
-      .getDashboardSummary()
-      .then((response) => {
+    void Promise.all([api.getDashboardSummary(), api.getAnalyticsDashboard()])
+      .then(([summaryResponse, analyticsResponse]) => {
         if (!active) {
           return;
         }
 
-        if (!isProfileOnboardingComplete(response.data.profile)) {
+        if (!isProfileOnboardingComplete(summaryResponse.data.profile)) {
           router.replace("/onboarding");
           return;
         }
 
-        setSummary(response.data);
+        setSummary(summaryResponse.data);
+        setAnalytics(analyticsResponse.data);
       })
       .finally(() => {
         if (active) {
@@ -40,7 +41,7 @@ export function DashboardPage() {
     };
   }, [router]);
 
-  if (isLoading || !summary) {
+  if (isLoading || !summary || !analytics) {
     return (
       <section className="loading-panel loading-panel-skeleton">
         <p className="eyebrow">Dashboard</p>
@@ -55,7 +56,8 @@ export function DashboardPage() {
     );
   }
 
-  const { profile, goals, exercises, topicMastery } = summary;
+  const { profile, goals, exercises } = summary;
+  const averageScore = analytics.summary.averageScore;
 
   return (
     <>
@@ -84,12 +86,18 @@ export function DashboardPage() {
             <strong>{profile?.targetRole ?? "Set target role"}</strong>
           </article>
           <article className="metric-card">
-            <span>Tracked goals</span>
-            <strong>{goals.length}</strong>
+            <span>Completed exercises</span>
+            <strong>{analytics.summary.totalExercisesCompleted}</strong>
           </article>
           <article className="metric-card">
-            <span>Generated exercises</span>
-            <strong>{exercises.length}</strong>
+            <span>Average score</span>
+            <strong>{averageScore === null ? "n/a" : `${averageScore.toFixed(1)}/10`}</strong>
+          </article>
+          <article className="metric-card">
+            <span>Practice streak</span>
+            <strong>
+              {analytics.summary.streakDays} day{analytics.summary.streakDays === 1 ? "" : "s"}
+            </strong>
           </article>
         </div>
       </section>
@@ -114,57 +122,83 @@ export function DashboardPage() {
 
         <section className="workspace-card">
           <div className="section-heading">
-            <p className="section-kicker">Weak Topics</p>
+            <p className="section-kicker">Weak Areas</p>
             <h2>What to reinforce next</h2>
           </div>
           <div className="mastery-list">
-            {topicMastery.slice(0, 3).map((item) => (
+            {analytics.weakTopics.slice(0, 3).map((item) => (
               <article className="mastery-card" key={item.topic}>
                 <div className="goal-card-topline">
                   <strong>{item.topic}</strong>
-                  <span>{item.averageScore.toFixed(1)}/10</span>
+                  <span>{item.masteryScore.toFixed(1)}/10</span>
                 </div>
-                <p>{item.weakestDimension ?? "No weak dimension yet"}</p>
+                <p>
+                  {item.attemptsCount} attempt{item.attemptsCount === 1 ? "" : "s"} ·{" "}
+                  {item.weakestDimension ?? "no weak dimension yet"}
+                </p>
               </article>
             ))}
-            {topicMastery.length === 0 ? <p className="empty-state">No mastery signals yet. Complete an exercise to seed your daily flow.</p> : null}
+            {analytics.weakTopics.length === 0 ? <p className="empty-state">No mastery signals yet. Complete an exercise to seed your analytics.</p> : null}
           </div>
         </section>
 
         <section className="workspace-card">
           <div className="section-heading">
-            <p className="section-kicker">Goals</p>
-            <h2>Keep momentum visible</h2>
+            <p className="section-kicker">Strong Topics</p>
+            <h2>Where quality is trending well</h2>
           </div>
           <div className="mastery-list">
-            {goals.slice(0, 3).map((goal) => (
-              <article className="mastery-card" key={goal.id}>
+            {analytics.strongTopics.slice(0, 3).map((item) => (
+              <article className="mastery-card" key={item.topic}>
                 <div className="goal-card-topline">
-                  <strong>{goal.title}</strong>
-                  <span>{goal.horizon}</span>
+                  <strong>{item.topic}</strong>
+                  <span>{item.masteryScore.toFixed(1)}/10</span>
                 </div>
-                <p>{goal.description ?? "No description yet."}</p>
+                <p>
+                  {item.attemptsCount} attempt{item.attemptsCount === 1 ? "" : "s"} recorded
+                </p>
               </article>
             ))}
-            {goals.length === 0 ? <p className="empty-state">Add goals during onboarding or from your profile workflow.</p> : null}
+            {analytics.strongTopics.length === 0 ? <p className="empty-state">Strong topics appear after evaluated exercises.</p> : null}
           </div>
         </section>
 
         <section className="workspace-card">
           <div className="section-heading">
-            <p className="section-kicker">Recent Practice</p>
-            <h2>Generated exercise backlog</h2>
+            <p className="section-kicker">Timeline</p>
+            <h2>Recent evaluated activity</h2>
           </div>
           <div className="exercise-history">
-            {exercises.slice(0, 4).map((exercise) => (
-              <article className="exercise-history-item" key={exercise.id}>
-                <strong>{exercise.title}</strong>
-                <span>
-                  {exercise.type} · {exercise.topic} · {exercise.difficulty}
-                </span>
+            {analytics.recentActivity.slice(0, 4).map((item) => (
+              <article className="exercise-history-item" key={item.entityId}>
+                <strong>{item.title}</strong>
+                <span>{new Date(item.createdAt).toLocaleDateString()}</span>
               </article>
             ))}
-            {exercises.length === 0 ? <p className="empty-state">Generate your first exercise from Practice.</p> : null}
+            {analytics.recentActivity.length === 0 ? <p className="empty-state">Evaluated submissions will appear here.</p> : null}
+          </div>
+        </section>
+
+        <section className="workspace-card workspace-card-wide">
+          <div className="section-heading">
+            <p className="section-kicker">Goals & Backlog</p>
+            <h2>Keep direction and exercise volume visible</h2>
+          </div>
+          <div className="mastery-list">
+            <article className="mastery-card">
+              <div className="goal-card-topline">
+                <strong>Tracked goals</strong>
+                <span>{goals.length}</span>
+              </div>
+              <p>{goals[0]?.title ?? "Add goals during onboarding or from your profile workflow."}</p>
+            </article>
+            <article className="mastery-card">
+              <div className="goal-card-topline">
+                <strong>Generated exercise backlog</strong>
+                <span>{exercises.length}</span>
+              </div>
+              <p>{exercises[0]?.title ?? "Generate your first exercise from Practice."}</p>
+            </article>
           </div>
         </section>
       </section>
