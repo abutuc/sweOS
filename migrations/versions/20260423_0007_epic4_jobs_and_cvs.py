@@ -30,6 +30,8 @@ job_status_enum = postgresql.ENUM(
 )
 cv_version_status_enum = postgresql.ENUM("base", "tailored", "archived", name="cv_version_status")
 source_type_enum = postgresql.ENUM(name="source_type", create_type=False)
+existing_job_status_enum = postgresql.ENUM(name="job_status", create_type=False)
+existing_cv_version_status_enum = postgresql.ENUM(name="cv_version_status", create_type=False)
 
 
 def upgrade() -> None:
@@ -84,7 +86,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("job_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("status", job_status_enum, nullable=False, server_default="saved"),
+        sa.Column("status", existing_job_status_enum, nullable=False, server_default="saved"),
         sa.Column("match_score", sa.Float(), nullable=True),
         sa.Column("interest_score", sa.Float(), nullable=True),
         sa.Column("notes", sa.Text(), nullable=True),
@@ -131,7 +133,7 @@ def upgrade() -> None:
         sa.Column("cv_document_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("based_on_version_id", postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column("job_id", postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column("status", cv_version_status_enum, nullable=False),
+        sa.Column("status", existing_cv_version_status_enum, nullable=False),
         sa.Column("title", sa.String(), nullable=False),
         sa.Column("summary", sa.Text(), nullable=True),
         sa.Column("structured_content_json", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
