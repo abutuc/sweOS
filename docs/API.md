@@ -628,15 +628,19 @@ Create draft or direct submission.
     "weakTopics": [
       {
         "topic": "distributed systems",
-        "subtopic": "consistency",
-        "masteryScore": 4.1
+        "weakestDimension": "tradeOffReasoning",
+        "masteryScore": 4.1,
+        "attemptsCount": 2,
+        "updatedAt": "2026-04-18T11:30:00Z"
       }
     ],
     "strongTopics": [
       {
         "topic": "python",
-        "subtopic": "data structures",
-        "masteryScore": 8.6
+        "weakestDimension": "edgeCases",
+        "masteryScore": 8.6,
+        "attemptsCount": 4,
+        "updatedAt": "2026-04-18T11:30:00Z"
       }
     ],
     "recentActivity": [
@@ -665,11 +669,10 @@ Create draft or direct submission.
   "data": [
     {
       "topic": "system design",
-      "subtopic": "rate limiting",
+      "weakestDimension": "tradeOffReasoning",
       "masteryScore": 6.8,
-      "confidenceScore": 0.64,
       "attemptsCount": 3,
-      "lastPracticedAt": "2026-04-18T11:30:00Z"
+      "updatedAt": "2026-04-18T11:30:00Z"
     }
   ]
 }
