@@ -29,6 +29,18 @@ const DEFAULT_DRAFT = {
 const MAX_RENDERED_EXERCISES = 30;
 const MAX_RENDERED_MASTERY_ITEMS = 20;
 
+function difficultyForMastery(score: number) {
+  if (score < 5) {
+    return "easy";
+  }
+
+  if (score >= 8) {
+    return "hard";
+  }
+
+  return "medium";
+}
+
 export function LearningGymSection({
   className,
   initialExercises = [],
@@ -178,6 +190,24 @@ export function LearningGymSection({
     setNotice(`Topic preset updated to ${topic}.`);
   };
 
+  const applyAdaptivePreset = () => {
+    const weakestTopic = topicMastery[0];
+
+    if (!weakestTopic) {
+      setNotice("Adaptive setup will be available after your first evaluated submission.");
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      topic: weakestTopic.topic,
+      subtopic: weakestTopic.topic,
+      difficulty: difficultyForMastery(weakestTopic.averageScore),
+      includeHints: true,
+    }));
+    setNotice(`Adaptive setup targets ${weakestTopic.topic} at ${difficultyForMastery(weakestTopic.averageScore)} difficulty.`);
+  };
+
   const revealNextHint = () => {
     if (!activeExercise) {
       return;
@@ -277,6 +307,9 @@ export function LearningGymSection({
             </div>
 
             <div className="section-actions">
+              <button className="ghost-button" type="button" onClick={applyAdaptivePreset} disabled={isWorking}>
+                Use adaptive setup
+              </button>
               <button className="primary-button" type="button" onClick={handleGenerate} disabled={isWorking}>
                 {isWorking ? "Working..." : "Generate exercise"}
               </button>
