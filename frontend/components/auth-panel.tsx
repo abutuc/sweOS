@@ -46,11 +46,14 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
   return (
     <section className="auth-panel">
       <div className="auth-panel-copy">
-        <p className="eyebrow">sweOS Companion</p>
-        <h1>Engineer your next role with a system that remembers where you are headed.</h1>
+        <p className="brand">sweOS COMPANION</p>
+        <h1>
+          Engineer your next role with a system that remembers where you are
+          headed.
+        </h1>
         <p>
-          Profile direction, calibrated skills, and goal momentum in one operating surface built
-          for modern software engineers.
+          Profile direction, calibrated skills, and goal momentum in one
+          operating surface built for modern software engineers.
         </p>
       </div>
 
@@ -58,9 +61,15 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
         <div className="auth-card-header">
           <div>
             <p className="section-kicker">Identity</p>
-            <h2>{isRegister ? "Create your workspace" : "Enter your workspace"}</h2>
+            <h2>
+              {isRegister ? "Create your workspace" : "Enter your workspace"}
+            </h2>
           </div>
-          <div className="mode-toggle" role="tablist" aria-label="Authentication mode">
+          <div
+            className="mode-toggle"
+            role="tablist"
+            aria-label="Authentication mode"
+          >
             <button
               className={mode === "login" ? "mode-toggle-active" : ""}
               type="button"
@@ -109,7 +118,9 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
           </label>
         </div>
 
-        <p className={`inline-feedback ${error ? "inline-feedback-error" : ""}`}>
+        <p
+          className={`inline-feedback ${error ? "inline-feedback-error" : ""}`}
+        >
           {error ??
             (isRegister
               ? "Create an identity to start shaping your engineer profile."
@@ -121,9 +132,17 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
             className="primary-button"
             type="button"
             onClick={handleSubmit}
-            disabled={isSubmitting || email.trim().length === 0 || password.trim().length < 8}
+            disabled={
+              isSubmitting ||
+              email.trim().length === 0 ||
+              password.trim().length < 8
+            }
           >
-            {isSubmitting ? "Working..." : isRegister ? "Create account" : "Login"}
+            {isSubmitting
+              ? "Working..."
+              : isRegister
+                ? "Create account"
+                : "Login"}
           </button>
         </div>
       </div>

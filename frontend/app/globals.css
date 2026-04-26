@@ -33,9 +33,21 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background:
-    radial-gradient(circle at top left, rgba(42, 212, 255, 0.18), transparent 24%),
-    radial-gradient(circle at top right, rgba(159, 177, 255, 0.18), transparent 30%),
-    radial-gradient(circle at bottom center, rgba(104, 240, 216, 0.12), transparent 22%),
+    radial-gradient(
+      circle at top left,
+      rgba(42, 212, 255, 0.18),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(159, 177, 255, 0.18),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at bottom center,
+      rgba(104, 240, 216, 0.12),
+      transparent 22%
+    ),
     linear-gradient(180deg, #040915 0%, #071120 44%, #091626 100%);
   font-family: "Sora", "Avenir Next", "Segoe UI", sans-serif;
 }
@@ -118,7 +130,11 @@ a {
   width: 54px;
   height: 54px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(104, 240, 216, 0.22), rgba(42, 212, 255, 0.22));
+  background: linear-gradient(
+    135deg,
+    rgba(104, 240, 216, 0.22),
+    rgba(42, 212, 255, 0.22)
+  );
   color: var(--accent);
   font-weight: 800;
   letter-spacing: -0.05em;
@@ -135,7 +151,10 @@ a {
   padding: 11px 14px;
   border-radius: 999px;
   color: var(--muted);
-  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 
 .app-shell-nav-item:hover {
@@ -161,7 +180,11 @@ a {
 .loading-panel {
   contain: layout paint;
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(16, 30, 51, 0.96), rgba(8, 18, 33, 0.98));
+  background: linear-gradient(
+    180deg,
+    rgba(16, 30, 51, 0.96),
+    rgba(8, 18, 33, 0.98)
+  );
   box-shadow: var(--shadow);
 }
 
@@ -193,6 +216,15 @@ a {
   letter-spacing: 0.24em;
   font-size: 0.76rem;
   font-weight: 700;
+}
+
+.brand {
+  margin: 0 0 12px;
+  color: var(--accent);
+  letter-spacing: 0.24em;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding-bottom: 6px;
 }
 
 .hero-copy,
@@ -397,7 +429,11 @@ a {
 .primary-button {
   padding: 13px 18px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-strong) 100%
+  );
   color: #04111f;
   font-weight: 700;
 }
@@ -766,7 +802,12 @@ a {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(104, 240, 216, 0.18), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(104, 240, 216, 0.18),
+    transparent
+  );
   animation: skeleton-sweep 1.35s ease-in-out infinite;
 }
 
