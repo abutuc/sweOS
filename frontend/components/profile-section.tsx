@@ -15,6 +15,13 @@ export function ProfileSection({ className }: ProfileSectionProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [targetRolesText, setTargetRolesText] = useState(
+    (profile?.targetRoles ?? []).join(", "),
+  );
+
+  useEffect(() => {
+    setTargetRolesText((profile?.targetRoles ?? []).join(", "));
+  }, [profile?.targetRoles]);
 
   useEffect(() => {
     let active = true;
@@ -44,7 +51,10 @@ export function ProfileSection({ className }: ProfileSectionProps) {
     };
   }, []);
 
-  const updateProfileField = <K extends keyof Profile>(key: K, value: Profile[K]) => {
+  const updateProfileField = <K extends keyof Profile>(
+    key: K,
+    value: Profile[K],
+  ) => {
     setProfile((current) => (current ? { ...current, [key]: value } : current));
   };
 
@@ -67,7 +77,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
       maxSalary !== null &&
       Number(minSalary) > Number(maxSalary)
     ) {
-      setValidationError("Minimum salary must be less than or equal to maximum salary.");
+      setValidationError(
+        "Minimum salary must be less than or equal to maximum salary.",
+      );
       return;
     }
 
@@ -110,7 +122,7 @@ export function ProfileSection({ className }: ProfileSectionProps) {
       <p className="section-status">
         {isLoading
           ? "Loading profile..."
-          : validationError ?? error ?? notice ?? "Profile synced with API"}
+          : (validationError ?? error ?? notice ?? "Profile synced with API")}
       </p>
 
       <div className="field-grid">
@@ -118,7 +130,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <span>Headline</span>
           <input
             value={profile?.headline ?? ""}
-            onChange={(event) => updateProfileField("headline", event.target.value)}
+            onChange={(event) =>
+              updateProfileField("headline", event.target.value)
+            }
             placeholder="Backend engineer with AI curiosity"
           />
         </label>
@@ -135,7 +149,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <span>Years of experience</span>
           <input
             value={profile?.yearsExperience ?? ""}
-            onChange={(event) => updateProfileField("yearsExperience", event.target.value)}
+            onChange={(event) =>
+              updateProfileField("yearsExperience", event.target.value)
+            }
             placeholder="2.0"
           />
         </label>
@@ -143,7 +159,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <span>Stack tags</span>
           <input
             value={(profile?.stack ?? []).join(", ")}
-            onChange={(event) => updateProfileField("stack", parseTags(event.target.value))}
+            onChange={(event) =>
+              updateProfileField("stack", parseTags(event.target.value))
+            }
             placeholder="Python, PostgreSQL, FastAPI"
           />
         </label>
@@ -151,7 +169,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <span>Current role</span>
           <input
             value={profile?.currentRole ?? ""}
-            onChange={(event) => updateProfileField("currentRole", event.target.value)}
+            onChange={(event) =>
+              updateProfileField("currentRole", event.target.value)
+            }
             placeholder="Software Engineer"
           />
         </label>
@@ -159,15 +179,20 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <span>Primary target role</span>
           <input
             value={profile?.targetRole ?? ""}
-            onChange={(event) => updateProfileField("targetRole", event.target.value)}
+            onChange={(event) =>
+              updateProfileField("targetRole", event.target.value)
+            }
             placeholder="Backend Engineer"
           />
         </label>
         <label className="field field-wide">
           <span>Target roles</span>
           <input
-            value={(profile?.targetRoles ?? []).join(", ")}
-            onChange={(event) => updateProfileField("targetRoles", parseTags(event.target.value))}
+            value={targetRolesText}
+            onChange={(event) => setTargetRolesText(event.target.value)}
+            onBlur={() =>
+              updateProfileField("targetRoles", parseTags(targetRolesText))
+            }
             placeholder="Backend Engineer, AI Engineer"
           />
         </label>
@@ -175,7 +200,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <span>Target seniority</span>
           <input
             value={profile?.targetSeniority ?? ""}
-            onChange={(event) => updateProfileField("targetSeniority", event.target.value)}
+            onChange={(event) =>
+              updateProfileField("targetSeniority", event.target.value)
+            }
             placeholder="mid"
           />
         </label>
@@ -184,7 +211,10 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <input
             value={(profile?.preferredIndustries ?? []).join(", ")}
             onChange={(event) =>
-              updateProfileField("preferredIndustries", parseTags(event.target.value))
+              updateProfileField(
+                "preferredIndustries",
+                parseTags(event.target.value),
+              )
             }
             placeholder="AI, Developer tools, Fintech"
           />
@@ -194,7 +224,10 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <input
             value={(profile?.preferredLocations ?? []).join(", ")}
             onChange={(event) =>
-              updateProfileField("preferredLocations", parseTags(event.target.value))
+              updateProfileField(
+                "preferredLocations",
+                parseTags(event.target.value),
+              )
             }
             placeholder="Portugal, Remote EU"
           />
@@ -204,7 +237,10 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <input
             value={(profile?.preferredWorkModes ?? []).join(", ")}
             onChange={(event) =>
-              updateProfileField("preferredWorkModes", parseTags(event.target.value))
+              updateProfileField(
+                "preferredWorkModes",
+                parseTags(event.target.value),
+              )
             }
             placeholder="remote, hybrid"
           />
@@ -213,7 +249,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <span>Learning goals</span>
           <input
             value={(profile?.learningGoals ?? []).join(", ")}
-            onChange={(event) => updateProfileField("learningGoals", parseTags(event.target.value))}
+            onChange={(event) =>
+              updateProfileField("learningGoals", parseTags(event.target.value))
+            }
             placeholder="System design depth, AI engineering portfolio"
           />
         </label>
@@ -222,7 +260,9 @@ export function ProfileSection({ className }: ProfileSectionProps) {
           <textarea
             rows={5}
             value={profile?.summary ?? ""}
-            onChange={(event) => updateProfileField("summary", event.target.value)}
+            onChange={(event) =>
+              updateProfileField("summary", event.target.value)
+            }
             placeholder="What should sweOS know about your direction?"
           />
         </label>
@@ -257,7 +297,12 @@ export function ProfileSection({ className }: ProfileSectionProps) {
       </div>
 
       <div className="section-actions">
-        <button className="primary-button" type="button" onClick={handleSave} disabled={isSaving || !profile}>
+        <button
+          className="primary-button"
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving || !profile}
+        >
           {isSaving ? "Saving..." : "Save profile"}
         </button>
       </div>
