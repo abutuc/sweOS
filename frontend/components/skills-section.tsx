@@ -21,6 +21,14 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const deferredSearch = useDeferredValue(search);
   const deferredCategory = useDeferredValue(category);
 
+  const skillLevelOptions = [
+    { value: "beginner", label: "Beginner", shortLabel: "B" },
+    { value: "elementary", label: "Elementary", shortLabel: "E" },
+    { value: "intermediate", label: "Intermediate", shortLabel: "I" },
+    { value: "advanced", label: "Advanced", shortLabel: "A" },
+    { value: "expert", label: "Expert", shortLabel: "X" },
+  ] as const;
+
   useEffect(() => {
     let active = true;
 
@@ -50,10 +58,14 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   }, []);
 
   const trackedSkillIds = new Set(userSkills.map((skill) => skill.skillId));
-  const categories = ["all", ...new Set(catalog.map((skill) => skill.category))];
+  const categories = [
+    "all",
+    ...new Set(catalog.map((skill) => skill.category)),
+  ];
   const matchingCatalog = catalog.filter((skill) => {
     const normalizedSearch = deferredSearch.trim().toLowerCase();
-    const matchesCategory = deferredCategory === "all" || skill.category === deferredCategory;
+    const matchesCategory =
+      deferredCategory === "all" || skill.category === deferredCategory;
     const matchesSearch =
       normalizedSearch.length === 0 ||
       skill.name.toLowerCase().includes(normalizedSearch) ||
@@ -66,7 +78,9 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const updateSkillLevel = (skillId: string, level: string) => {
     setUserSkills((current) =>
       current.map((skill) =>
-        skill.skillId === skillId ? { ...skill, selfAssessedLevel: level } : skill,
+        skill.skillId === skillId
+          ? { ...skill, selfAssessedLevel: level }
+          : skill,
       ),
     );
   };
@@ -122,7 +136,9 @@ export function SkillsSection({ className }: SkillsSectionProps) {
       <p className="section-status">
         {isLoading
           ? "Loading skills..."
-          : error ?? notice ?? `${catalog.length} skills in catalog, ${userSkills.length} tracked`}
+          : (error ??
+            notice ??
+            `${catalog.length} skills in catalog, ${userSkills.length} tracked`)}
       </p>
 
       <div className="skill-stack">
@@ -134,7 +150,10 @@ export function SkillsSection({ className }: SkillsSectionProps) {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search skills"
             />
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
+            <select
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+            >
               {categories.map((item) => (
                 <option key={item} value={item}>
                   {item === "all" ? "All categories" : item}
@@ -160,7 +179,8 @@ export function SkillsSection({ className }: SkillsSectionProps) {
           ) : null}
           {matchingCatalog.length > visibleCatalog.length ? (
             <p className="empty-state">
-              Showing first {visibleCatalog.length} matches. Refine the search to narrow the catalog.
+              Showing first {visibleCatalog.length} matches. Refine the search
+              to narrow the catalog.
             </p>
           ) : null}
         </div>
@@ -170,27 +190,52 @@ export function SkillsSection({ className }: SkillsSectionProps) {
             {userSkills.map((skill) => (
               <label className="skill-level-row" key={skill.skillId}>
                 <span>{skill.skillName}</span>
-                <select
-                  value={skill.selfAssessedLevel}
-                  onChange={(event) => updateSkillLevel(skill.skillId, event.target.value)}
+                <div
+                  className="skill-level-picker"
+                  role="radiogroup"
+                  aria-label={`Skill level for ${skill.skillName}`}
                 >
-                  <option value="beginner">Beginner</option>
-                  <option value="elementary">Elementary</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="expert">Expert</option>
-                </select>
+                  {skillLevelOptions.map((option) => {
+                    const isSelected = skill.selfAssessedLevel === option.value;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`skill-level-option ${isSelected ? "selected" : ""}`}
+                        role="radio"
+                        aria-checked={isSelected}
+                        title={option.label}
+                        onClick={() =>
+                          updateSkillLevel(skill.skillId, option.value)
+                        }
+                      >
+                        <span className="skill-level-short">
+                          {option.shortLabel}
+                        </span>
+                        <span className="skill-level-full">{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </label>
             ))}
           </div>
           {userSkills.length === 0 ? (
-            <p className="empty-state">Add skills from the catalog to start tracking your level.</p>
+            <p className="empty-state">
+              Add skills from the catalog to start tracking your level.
+            </p>
           ) : null}
         </div>
       </div>
 
       <div className="section-actions">
-        <button className="primary-button" type="button" onClick={handleSave} disabled={isSaving}>
+        <button
+          className="primary-button"
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
           {isSaving ? "Saving..." : "Save skill levels"}
         </button>
       </div>
