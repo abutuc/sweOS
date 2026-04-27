@@ -94,7 +94,7 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
               <input
                 value={fullName}
                 onChange={(event) => setFullName(event.target.value)}
-                placeholder="Andre Butuc"
+                placeholder="John Doe"
               />
             </label>
           ) : null}
@@ -103,7 +103,7 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
             <input
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="andre@example.com"
+              placeholder="john.doe@mail.com"
               type="email"
             />
           </label>
