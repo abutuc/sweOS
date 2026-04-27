@@ -23,6 +23,14 @@ export function ProfileSection({ className }: ProfileSectionProps) {
     setTargetRolesText((profile?.targetRoles ?? []).join(", "));
   }, [profile?.targetRoles]);
 
+  const [learningGoalsText, setLearningGoalsText] = useState(
+    (profile?.learningGoals ?? []).join(", "),
+  );
+
+  useEffect(() => {
+    setLearningGoalsText((profile?.learningGoals ?? []).join(", "));
+  }, [profile?.learningGoals]);
+
   useEffect(() => {
     let active = true;
 
@@ -248,9 +256,10 @@ export function ProfileSection({ className }: ProfileSectionProps) {
         <label className="field field-wide">
           <span>Learning goals</span>
           <input
-            value={(profile?.learningGoals ?? []).join(", ")}
-            onChange={(event) =>
-              updateProfileField("learningGoals", parseTags(event.target.value))
+            value={learningGoalsText}
+            onChange={(event) => setLearningGoalsText(event.target.value)}
+            onBlur={() =>
+              updateProfileField("learningGoals", parseTags(learningGoalsText))
             }
             placeholder="System design depth, AI engineering portfolio"
           />
