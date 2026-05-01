@@ -550,6 +550,19 @@ a {
   display: block;
 }
 
+.wizard-confirmation-panel {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(104, 240, 216, 0.22);
+  background: linear-gradient(
+    180deg,
+    rgba(104, 240, 216, 0.08),
+    rgba(255, 255, 255, 0.03)
+  );
+}
+
 .skill-pane {
   contain: layout paint;
   padding: 18px;

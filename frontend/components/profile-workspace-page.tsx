@@ -53,8 +53,11 @@ export function ProfileWorkspacePage() {
 
   useOnboardingStatus();
 
-  const currentStep = PROFILE_STEPS[activeStep];
-  const currentStepDirty = stepDirty[currentStep.id];
+  const isComplete = activeStep === PROFILE_STEPS.length;
+  const currentStep = isComplete
+    ? PROFILE_STEPS[PROFILE_STEPS.length - 1]
+    : PROFILE_STEPS[activeStep];
+  const currentStepDirty = isComplete ? false : stepDirty[currentStep.id];
   const isFinalStep = activeStep === PROFILE_STEPS.length - 1;
 
   const updateStepDirty = (stepId: keyof typeof stepDirty, dirty: boolean) => {
@@ -84,6 +87,11 @@ export function ProfileWorkspacePage() {
       if (!saved) {
         return;
       }
+    }
+
+    if (isFinalStep) {
+      setActiveStep(PROFILE_STEPS.length);
+      return;
     }
 
     setActiveStep((current) =>
@@ -121,7 +129,9 @@ export function ProfileWorkspacePage() {
         </div>
 
         <p className="section-status">
-          Step {activeStep + 1} of {PROFILE_STEPS.length}: {currentStep.description}
+          {isComplete
+            ? "Profile saved. You can revisit any step below if you want to make changes."
+            : `Step ${activeStep + 1} of ${PROFILE_STEPS.length}: ${currentStep.description}`}
         </p>
 
         <div className="wizard-stepper" role="tablist" aria-label="Profile sections">
@@ -150,6 +160,27 @@ export function ProfileWorkspacePage() {
         </div>
 
         <div className="wizard-panel-stack">
+          {isComplete ? (
+            <div className="wizard-panel wizard-confirmation-panel">
+              <div className="section-heading">
+                <p className="section-kicker">Complete</p>
+                <h2>Profile saved successfully.</h2>
+              </div>
+              <p className="section-status">
+                Your profile, identity, and skill signals are up to date.
+              </p>
+              <div className="section-actions section-actions-left">
+                <button
+                  className="ghost-button"
+                  type="button"
+                  onClick={() => setActiveStep(0)}
+                >
+                  Review steps
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           <div
             id="profile-step-identity"
             className="wizard-panel"
@@ -203,7 +234,7 @@ export function ProfileWorkspacePage() {
             className="ghost-button"
             type="button"
             onClick={() => setActiveStep((current) => Math.max(0, current - 1))}
-            disabled={activeStep === 0}
+            disabled={activeStep === 0 || isComplete}
           >
             Previous
           </button>
@@ -211,10 +242,15 @@ export function ProfileWorkspacePage() {
             className="primary-button"
             type="button"
             onClick={() => void handlePrimaryAction()}
-            disabled={isAdvancing || (isFinalStep && !currentStepDirty)}
+            disabled={
+              isAdvancing ||
+              (isComplete ? true : isFinalStep && !currentStepDirty)
+            }
           >
             {isAdvancing
               ? "Saving..."
+              : isComplete
+                ? "Saved"
               : isFinalStep
                 ? "Save"
                 : currentStepDirty
