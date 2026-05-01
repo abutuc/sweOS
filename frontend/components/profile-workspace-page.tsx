@@ -55,6 +55,7 @@ export function ProfileWorkspacePage() {
 
   const currentStep = PROFILE_STEPS[activeStep];
   const currentStepDirty = stepDirty[currentStep.id];
+  const isFinalStep = activeStep === PROFILE_STEPS.length - 1;
 
   const updateStepDirty = (stepId: keyof typeof stepDirty, dirty: boolean) => {
     setStepDirty((current) =>
@@ -88,6 +89,19 @@ export function ProfileWorkspacePage() {
     setActiveStep((current) =>
       Math.min(PROFILE_STEPS.length - 1, current + 1),
     );
+  };
+
+  const handlePrimaryAction = async () => {
+    if (isFinalStep) {
+      if (!currentStepDirty) {
+        return;
+      }
+
+      await handleNext();
+      return;
+    }
+
+    await handleNext();
   };
 
   return (
@@ -196,10 +210,16 @@ export function ProfileWorkspacePage() {
           <button
             className="primary-button"
             type="button"
-            onClick={() => void handleNext()}
-            disabled={activeStep === PROFILE_STEPS.length - 1}
+            onClick={() => void handlePrimaryAction()}
+            disabled={isAdvancing || (isFinalStep && !currentStepDirty)}
           >
-            {isAdvancing ? "Saving..." : currentStepDirty ? "Save & Next" : "Next"}
+            {isAdvancing
+              ? "Saving..."
+              : isFinalStep
+                ? "Save"
+                : currentStepDirty
+                  ? "Save & Next"
+                  : "Next"}
           </button>
         </div>
       </section>
