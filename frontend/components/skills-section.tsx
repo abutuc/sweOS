@@ -1,15 +1,27 @@
 "use client";
 
-import { useDeferredValue, useEffect, useState } from "react";
+import {
+  forwardRef,
+  useDeferredValue,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 
 import { api, type SkillCatalogItem, type UserSkill } from "@/lib/api";
 
 type SkillsSectionProps = {
   className?: string;
+  onDirtyChange?: (dirty: boolean) => void;
 };
 const MAX_VISIBLE_CATALOG_SKILLS = 80;
 
-export function SkillsSection({ className }: SkillsSectionProps) {
+export type SkillsSectionHandle = {
+  save: () => Promise<boolean>;
+};
+
+export const SkillsSection = forwardRef<SkillsSectionHandle, SkillsSectionProps>(
+  function SkillsSection({ className, onDirtyChange }, ref) {
   const [catalog, setCatalog] = useState<SkillCatalogItem[]>([]);
   const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
   const [search, setSearch] = useState("");
@@ -18,6 +30,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
   const deferredSearch = useDeferredValue(search);
   const deferredCategory = useDeferredValue(category);
 
@@ -39,6 +52,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
           setUserSkills(userSkillsResponse.data);
           setError(null);
           setNotice(null);
+          setIsDirty(false);
         }
       })
       .catch(() => {
@@ -56,6 +70,10 @@ export function SkillsSection({ className }: SkillsSectionProps) {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const trackedSkillIds = new Set(userSkills.map((skill) => skill.skillId));
   const categories = [
@@ -83,6 +101,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
           : skill,
       ),
     );
+    setIsDirty(true);
   };
 
   const addSkillToTrackedList = (skill: SkillCatalogItem) => {
@@ -104,6 +123,7 @@ export function SkillsSection({ className }: SkillsSectionProps) {
         lastEvaluatedAt: null,
       },
     ]);
+    setIsDirty(true);
   };
 
   const handleSave = async () => {
@@ -119,12 +139,19 @@ export function SkillsSection({ className }: SkillsSectionProps) {
         })),
       });
       setNotice("Skill levels saved.");
+      setIsDirty(false);
+      return true;
     } catch {
       setError("Skill levels could not be saved.");
+      return false;
     } finally {
       setIsSaving(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+  }));
 
   return (
     <section className={className}>
@@ -241,4 +268,4 @@ export function SkillsSection({ className }: SkillsSectionProps) {
       </div>
     </section>
   );
-}
+});

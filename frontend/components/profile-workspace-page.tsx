@@ -1,10 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { AccountSection } from "@/components/account-section";
-import { ProfileSection } from "@/components/profile-section";
-import { SkillsSection } from "@/components/skills-section";
+import {
+  AccountSection,
+  type AccountSectionHandle,
+} from "@/components/account-section";
+import {
+  ProfileSection,
+  type ProfileSectionHandle,
+} from "@/components/profile-section";
+import {
+  SkillsSection,
+  type SkillsSectionHandle,
+} from "@/components/skills-section";
 import { useAuthContext } from "@/components/auth-context";
 import { useOnboardingStatus } from "@/components/use-onboarding-status";
 
@@ -32,10 +41,54 @@ const PROFILE_STEPS = [
 export function ProfileWorkspacePage() {
   const { user, setUser } = useAuthContext();
   const [activeStep, setActiveStep] = useState(0);
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [stepDirty, setStepDirty] = useState({
+    identity: false,
+    profile: false,
+    skills: false,
+  });
+  const accountStepRef = useRef<AccountSectionHandle>(null);
+  const profileStepRef = useRef<ProfileSectionHandle>(null);
+  const skillsStepRef = useRef<SkillsSectionHandle>(null);
 
   useOnboardingStatus();
 
   const currentStep = PROFILE_STEPS[activeStep];
+  const currentStepDirty = stepDirty[currentStep.id];
+
+  const updateStepDirty = (stepId: keyof typeof stepDirty, dirty: boolean) => {
+    setStepDirty((current) =>
+      current[stepId] === dirty ? current : { ...current, [stepId]: dirty },
+    );
+  };
+
+  const handleNext = async () => {
+    if (isAdvancing) {
+      return;
+    }
+
+    const currentStepId = currentStep.id;
+    const currentStepHandle = {
+      identity: accountStepRef,
+      profile: profileStepRef,
+      skills: skillsStepRef,
+    }[currentStepId];
+
+    if (stepDirty[currentStepId]) {
+      setIsAdvancing(true);
+
+      const saved = await currentStepHandle.current?.save();
+      setIsAdvancing(false);
+
+      if (!saved) {
+        return;
+      }
+    }
+
+    setActiveStep((current) =>
+      Math.min(PROFILE_STEPS.length - 1, current + 1),
+    );
+  };
 
   return (
     <>
@@ -90,7 +143,13 @@ export function ProfileWorkspacePage() {
             aria-labelledby="profile-step-tab-identity"
             hidden={activeStep !== 0}
           >
-            <AccountSection className="wizard-panel-inner" user={user} onUserUpdated={setUser} />
+            <AccountSection
+              ref={accountStepRef}
+              className="wizard-panel-inner"
+              user={user}
+              onUserUpdated={setUser}
+              onDirtyChange={(dirty) => updateStepDirty("identity", dirty)}
+            />
           </div>
 
           <div
@@ -100,7 +159,11 @@ export function ProfileWorkspacePage() {
             aria-labelledby="profile-step-tab-profile"
             hidden={activeStep !== 1}
           >
-            <ProfileSection className="wizard-panel-inner" />
+            <ProfileSection
+              ref={profileStepRef}
+              className="wizard-panel-inner"
+              onDirtyChange={(dirty) => updateStepDirty("profile", dirty)}
+            />
           </div>
 
           <div
@@ -110,7 +173,11 @@ export function ProfileWorkspacePage() {
             aria-labelledby="profile-step-tab-skills"
             hidden={activeStep !== 2}
           >
-            <SkillsSection className="wizard-panel-inner" />
+            <SkillsSection
+              ref={skillsStepRef}
+              className="wizard-panel-inner"
+              onDirtyChange={(dirty) => updateStepDirty("skills", dirty)}
+            />
           </div>
         </div>
 
@@ -126,12 +193,10 @@ export function ProfileWorkspacePage() {
           <button
             className="primary-button"
             type="button"
-            onClick={() =>
-              setActiveStep((current) => Math.min(PROFILE_STEPS.length - 1, current + 1))
-            }
+            onClick={() => void handleNext()}
             disabled={activeStep === PROFILE_STEPS.length - 1}
           >
-            Next
+            {isAdvancing ? "Saving..." : currentStepDirty ? "Save & Next" : "Next"}
           </button>
         </div>
       </section>
