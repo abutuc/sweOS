@@ -406,6 +406,10 @@ a {
   justify-content: flex-start;
 }
 
+.section-actions-split {
+  justify-content: space-between;
+}
+
 .primary-button,
 .ghost-button,
 .mode-toggle button,
@@ -461,6 +465,89 @@ a {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-wizard-card {
+  display: grid;
+  gap: 18px;
+}
+
+.wizard-stepper {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  text-align: left;
+}
+
+.wizard-step-active {
+  border-color: rgba(104, 240, 216, 0.45);
+  background: linear-gradient(
+    180deg,
+    rgba(104, 240, 216, 0.12),
+    rgba(255, 255, 255, 0.04)
+  );
+  color: var(--ink);
+  box-shadow: 0 0 0 1px rgba(104, 240, 216, 0.1);
+}
+
+.wizard-step-index {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 700;
+}
+
+.wizard-step-active .wizard-step-index {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #04111f;
+}
+
+.wizard-step-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wizard-step-label {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.wizard-step-kicker {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.wizard-panel-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.wizard-panel {
+  min-height: 0;
+}
+
+.wizard-panel[hidden] {
+  display: none;
+}
+
+.wizard-panel-inner {
+  display: block;
 }
 
 .skill-pane {
@@ -864,10 +951,18 @@ a {
     grid-column: auto;
   }
 
+  .wizard-stepper {
+    grid-template-columns: 1fr;
+  }
+
   .hero-actions,
   .goal-card-actions,
   .section-actions {
     flex-wrap: wrap;
+  }
+
+  .section-actions-split {
+    justify-content: flex-start;
   }
 }
 
