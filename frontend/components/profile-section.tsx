@@ -12,6 +12,7 @@ import { api, type Profile } from "@/lib/api";
 type ProfileSectionProps = {
   className?: string;
   onDirtyChange?: (dirty: boolean) => void;
+  showSaveButton?: boolean;
 };
 
 export type ProfileSectionHandle = {
@@ -19,7 +20,10 @@ export type ProfileSectionHandle = {
 };
 
 export const ProfileSection = forwardRef<ProfileSectionHandle, ProfileSectionProps>(
-  function ProfileSection({ className, onDirtyChange }, ref) {
+  function ProfileSection(
+    { className, onDirtyChange, showSaveButton = true },
+    ref,
+  ) {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [isDirty, setIsDirty] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -345,16 +349,18 @@ export const ProfileSection = forwardRef<ProfileSectionHandle, ProfileSectionPro
           </label>
         </div>
 
-        <div className="section-actions">
-          <button
-            className="primary-button"
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving || !profile}
-          >
-            {isSaving ? "Saving..." : "Save profile"}
-          </button>
-        </div>
+        {showSaveButton ? (
+          <div className="section-actions">
+            <button
+              className="primary-button"
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving || !profile}
+            >
+              {isSaving ? "Saving..." : "Save profile"}
+            </button>
+          </div>
+        ) : null}
       </section>
     );
   },

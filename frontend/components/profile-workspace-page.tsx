@@ -149,6 +149,7 @@ export function ProfileWorkspacePage() {
               user={user}
               onUserUpdated={setUser}
               onDirtyChange={(dirty) => updateStepDirty("identity", dirty)}
+              showSaveButton={false}
             />
           </div>
 
@@ -163,6 +164,7 @@ export function ProfileWorkspacePage() {
               ref={profileStepRef}
               className="wizard-panel-inner"
               onDirtyChange={(dirty) => updateStepDirty("profile", dirty)}
+              showSaveButton={false}
             />
           </div>
 
@@ -177,6 +179,7 @@ export function ProfileWorkspacePage() {
               ref={skillsStepRef}
               className="wizard-panel-inner"
               onDirtyChange={(dirty) => updateStepDirty("skills", dirty)}
+              showSaveButton={false}
             />
           </div>
         </div>

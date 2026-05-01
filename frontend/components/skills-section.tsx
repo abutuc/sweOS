@@ -13,6 +13,7 @@ import { api, type SkillCatalogItem, type UserSkill } from "@/lib/api";
 type SkillsSectionProps = {
   className?: string;
   onDirtyChange?: (dirty: boolean) => void;
+  showSaveButton?: boolean;
 };
 const MAX_VISIBLE_CATALOG_SKILLS = 80;
 
@@ -21,7 +22,10 @@ export type SkillsSectionHandle = {
 };
 
 export const SkillsSection = forwardRef<SkillsSectionHandle, SkillsSectionProps>(
-  function SkillsSection({ className, onDirtyChange }, ref) {
+  function SkillsSection(
+    { className, onDirtyChange, showSaveButton = true },
+    ref,
+  ) {
   const [catalog, setCatalog] = useState<SkillCatalogItem[]>([]);
   const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
   const [search, setSearch] = useState("");
@@ -256,16 +260,18 @@ export const SkillsSection = forwardRef<SkillsSectionHandle, SkillsSectionProps>
         </div>
       </div>
 
-      <div className="section-actions">
-        <button
-          className="primary-button"
-          type="button"
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? "Saving..." : "Save skill levels"}
-        </button>
-      </div>
+      {showSaveButton ? (
+        <div className="section-actions">
+          <button
+            className="primary-button"
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : "Save skill levels"}
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 });

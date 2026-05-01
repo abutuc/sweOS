@@ -9,6 +9,7 @@ type AccountSectionProps = {
   user: AuthUser;
   onUserUpdated: (user: AuthUser) => void;
   onDirtyChange?: (dirty: boolean) => void;
+  showSaveButton?: boolean;
 };
 
 export type AccountSectionHandle = {
@@ -16,7 +17,10 @@ export type AccountSectionHandle = {
 };
 
 export const AccountSection = forwardRef<AccountSectionHandle, AccountSectionProps>(
-  function AccountSection({ className, user, onUserUpdated, onDirtyChange }, ref) {
+  function AccountSection(
+    { className, user, onUserUpdated, onDirtyChange, showSaveButton = true },
+    ref,
+  ) {
     const [fullName, setFullName] = useState(user.fullName ?? "");
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -85,11 +89,13 @@ export const AccountSection = forwardRef<AccountSectionHandle, AccountSectionPro
           </label>
         </div>
 
-        <div className="section-actions">
-          <button className="primary-button" type="button" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save identity"}
-          </button>
-        </div>
+        {showSaveButton ? (
+          <div className="section-actions">
+            <button className="primary-button" type="button" onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save identity"}
+            </button>
+          </div>
+        ) : null}
       </section>
     );
   },
