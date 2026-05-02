@@ -254,7 +254,8 @@ def queue_item_parse_endpoint(
 ):
     item = _item_or_404(db, user, item_id)
     job = queue_item_parse(db, user, item)
-    return IngestionActionEnvelope(data={"jobId": str(job.id), "status": job.status.value})
+    status = getattr(job.status, "value", job.status)
+    return IngestionActionEnvelope(data={"jobId": str(job.id), "status": status})
 
 
 @router.post("/items/{item_id}/archive", response_model=IngestionItemRead)

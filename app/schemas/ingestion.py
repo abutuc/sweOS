@@ -252,6 +252,8 @@ class ExternalTransactionRead(ApiSchema):
 
 
 class EngineOverviewRead(ApiSchema):
+    model_config = ConfigDict(from_attributes=True)
+
     total_sources: int = Field(alias="totalSources")
     active_runs: int = Field(alias="activeRuns")
     queued_jobs: int = Field(alias="queuedJobs")
