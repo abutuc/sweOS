@@ -2,6 +2,8 @@ from collections.abc import Sequence
 
 from sqlalchemy.orm import Session
 
+from app.db.leetcode_catalog import LEETCODE_PROBLEMS
+from app.models.exercise import Exercise, ExerciseType, SourceType
 from app.models.skill import Skill
 
 
@@ -108,6 +110,45 @@ def seed_skill_catalog(db: Session) -> int:
             continue
 
         db.add(Skill(**skill_data))
+        created_count += 1
+
+    db.commit()
+    return created_count
+
+
+def seed_leetcode_exercises(db: Session) -> int:
+    created_count = 0
+
+    for problem in LEETCODE_PROBLEMS:
+        existing_exercise = (
+            db.query(Exercise)
+            .filter(
+                Exercise.user_id.is_(None),
+                Exercise.title == problem["title"],
+            )
+            .one_or_none()
+        )
+        if existing_exercise is not None:
+            continue
+
+        db.add(
+            Exercise(
+                user_id=None,
+                type=ExerciseType.dsa,
+                topic=problem["topic"],
+                subtopic=problem["subtopic"],
+                difficulty=problem["difficulty"],
+                title=problem["title"],
+                prompt_markdown=problem["prompt_markdown"],
+                constraints_json=problem["constraints_json"],
+                expected_outcomes_json=problem["expected_outcomes_json"],
+                hints_json=problem["hints_json"],
+                canonical_solution_json=problem["canonical_solution_json"],
+                tags=list(problem["tags"]),
+                source=SourceType.manual,
+                created_by_ai=False,
+            )
+        )
         created_count += 1
 
     db.commit()
