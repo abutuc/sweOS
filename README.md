@@ -49,6 +49,7 @@ After the editable install, these commands are available:
 sweos-create-tables
 sweos-seed-default-user
 sweos-seed-skill-catalog
+sweos-seed-leetcode-exercises
 sweos-bootstrap-epic1
 ```
 
