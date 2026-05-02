@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, Float, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Enum, Float, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -146,7 +146,10 @@ class IngestionSource(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
-    type: Mapped[IngestionSourceType] = mapped_column(String, nullable=False)
+    type: Mapped[IngestionSourceType] = mapped_column(
+        Enum(IngestionSourceType, name="ingestion_source_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
     url: Mapped[str | None] = mapped_column(Text, nullable=True)
     config_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
@@ -170,8 +173,16 @@ class IngestionRun(Base):
         ForeignKey("ingestion_sources.id", ondelete="SET NULL"),
         nullable=True,
     )
-    status: Mapped[IngestionRunStatus] = mapped_column(String, nullable=False, default=IngestionRunStatus.queued)
-    trigger_type: Mapped[IngestionTriggerType] = mapped_column(String, nullable=False, default=IngestionTriggerType.manual)
+    status: Mapped[IngestionRunStatus] = mapped_column(
+        Enum(IngestionRunStatus, name="ingestion_run_status", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+        default=IngestionRunStatus.queued,
+    )
+    trigger_type: Mapped[IngestionTriggerType] = mapped_column(
+        Enum(IngestionTriggerType, name="ingestion_trigger_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+        default=IngestionTriggerType.manual,
+    )
     expected_item_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fetched_item_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     parsed_item_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -209,12 +220,20 @@ class IngestionItem(Base):
     )
     external_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     canonical_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-    type: Mapped[IngestionItemType] = mapped_column(String, nullable=False, default=IngestionItemType.unknown)
+    type: Mapped[IngestionItemType] = mapped_column(
+        Enum(IngestionItemType, name="ingestion_item_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+        default=IngestionItemType.unknown,
+    )
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
     raw_content: Mapped[str] = mapped_column(Text, nullable=False)
     raw_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     content_hash: Mapped[str] = mapped_column(String, nullable=False)
-    status: Mapped[IngestionItemStatus] = mapped_column(String, nullable=False, default=IngestionItemStatus.fetched)
+    status: Mapped[IngestionItemStatus] = mapped_column(
+        Enum(IngestionItemStatus, name="ingestion_item_status", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+        default=IngestionItemStatus.fetched,
+    )
     duplicate_of_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("ingestion_items.id", ondelete="SET NULL"),
@@ -242,7 +261,10 @@ class ParsedIngestionItem(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     item_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("ingestion_items.id", ondelete="CASCADE"), nullable=False)
-    parser_type: Mapped[ParsedItemParserType] = mapped_column(String, nullable=False)
+    parser_type: Mapped[ParsedItemParserType] = mapped_column(
+        Enum(ParsedItemParserType, name="parsed_item_parser_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
     parsed_type: Mapped[str] = mapped_column(String, nullable=False)
     parsed_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     summary_markdown: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -261,8 +283,15 @@ class WorkerJob(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    job_type: Mapped[WorkerJobType] = mapped_column(String, nullable=False)
-    status: Mapped[WorkerJobStatus] = mapped_column(String, nullable=False, default=WorkerJobStatus.queued)
+    job_type: Mapped[WorkerJobType] = mapped_column(
+        Enum(WorkerJobType, name="worker_job_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
+    status: Mapped[WorkerJobStatus] = mapped_column(
+        Enum(WorkerJobStatus, name="worker_job_status", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+        default=WorkerJobStatus.queued,
+    )
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
     run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("ingestion_runs.id", ondelete="CASCADE"), nullable=True)
     item_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("ingestion_items.id", ondelete="CASCADE"), nullable=True)
@@ -295,7 +324,10 @@ class AuditEvent(Base):
     entity_type: Mapped[str] = mapped_column(String, nullable=False)
     entity_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     event_type: Mapped[str] = mapped_column(String, nullable=False)
-    actor_type: Mapped[AuditActorType] = mapped_column(String, nullable=False)
+    actor_type: Mapped[AuditActorType] = mapped_column(
+        Enum(AuditActorType, name="audit_actor_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
     actor_id: Mapped[str | None] = mapped_column(String, nullable=True)
     payload_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -306,8 +338,15 @@ class ReconciliationRun(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("ingestion_runs.id", ondelete="SET NULL"), nullable=True)
-    type: Mapped[ReconciliationType] = mapped_column(String, nullable=False)
-    status: Mapped[ReconciliationStatus] = mapped_column(String, nullable=False, default=ReconciliationStatus.queued)
+    type: Mapped[ReconciliationType] = mapped_column(
+        Enum(ReconciliationType, name="reconciliation_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
+    status: Mapped[ReconciliationStatus] = mapped_column(
+        Enum(ReconciliationStatus, name="reconciliation_status", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+        default=ReconciliationStatus.queued,
+    )
     expected_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     actual_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     discrepancy_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -336,7 +375,10 @@ class ReconciliationItem(Base):
     external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
     expected_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     actual_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
-    status: Mapped[ReconciliationItemStatus] = mapped_column(String, nullable=False)
+    status: Mapped[ReconciliationItemStatus] = mapped_column(
+        Enum(ReconciliationItemStatus, name="reconciliation_item_status", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     reconciliation_run = relationship("ReconciliationRun", back_populates="items")
@@ -357,8 +399,14 @@ class ReconciliationDiscrepancy(Base):
         ForeignKey("reconciliation_items.id", ondelete="CASCADE"),
         nullable=True,
     )
-    severity: Mapped[ReconciliationDiscrepancySeverity] = mapped_column(String, nullable=False)
-    type: Mapped[ReconciliationDiscrepancyType] = mapped_column(String, nullable=False)
+    severity: Mapped[ReconciliationDiscrepancySeverity] = mapped_column(
+        Enum(ReconciliationDiscrepancySeverity, name="reconciliation_discrepancy_severity", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
+    type: Mapped[ReconciliationDiscrepancyType] = mapped_column(
+        Enum(ReconciliationDiscrepancyType, name="reconciliation_discrepancy_type", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
     description: Mapped[str] = mapped_column(Text, nullable=False)
     expected_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     actual_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
@@ -407,7 +455,10 @@ class ExternalTransaction(Base):
     asset_symbol: Mapped[str] = mapped_column(String, nullable=False)
     amount: Mapped[float] = mapped_column(Numeric(24, 8), nullable=False)
     fee: Mapped[float] = mapped_column(Numeric(24, 8), nullable=False, default=0)
-    status: Mapped[ExternalTransactionStatus] = mapped_column(String, nullable=False)
+    status: Mapped[ExternalTransactionStatus] = mapped_column(
+        Enum(ExternalTransactionStatus, name="external_transaction_status", values_callable=lambda enum_cls: [item.value for item in enum_cls], native_enum=False),
+        nullable=False,
+    )
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     raw_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
