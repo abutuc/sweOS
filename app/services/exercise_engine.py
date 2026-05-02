@@ -13,6 +13,7 @@ from app.models.exercise_evaluation import ExerciseEvaluation
 from app.models.user import User
 from app.models.user_topic_mastery import UserTopicMastery
 from app.schemas.exercise import ExerciseGenerateRequest
+from app.services.leetcode_runtime import run_python_solution
 
 
 @dataclass
@@ -128,6 +129,66 @@ def create_exercise_from_request(
 
 
 def evaluate_attempt(attempt: ExerciseAttempt) -> dict[str, Any]:
+    runtime_config = attempt.exercise.constraints_json.get("runtime") or {}
+    if runtime_config:
+        runtime_tests = runtime_config.get("tests", [])
+        runtime_result = run_python_solution(attempt.answer_code or "", runtime_tests)
+        pass_ratio = (
+            runtime_result.passed_cases / runtime_result.total_cases if runtime_result.total_cases else 0.0
+        )
+        efficiency_score = 10 if runtime_result.passed else max(1, 10 - len(runtime_result.case_results))
+        clarity_score = 8 if runtime_result.passed else 4
+        tradeoff_score = 6 if runtime_result.passed else 2
+        maintainability_score = 8 if runtime_result.passed else 4
+        rubric_scores = {
+            "correctness": round(pass_ratio * 10, 2),
+            "efficiency": float(efficiency_score),
+            "clarity": float(clarity_score),
+            "tradeOffReasoning": float(tradeoff_score),
+            "maintainability": float(maintainability_score),
+        }
+        overall_score = round(mean(rubric_scores.values()), 2)
+        weakest_dimension = min(rubric_scores, key=rubric_scores.get)
+        strengths = [
+            f"Passed {runtime_result.passed_cases} of {runtime_result.total_cases} test cases",
+            "The solution shape matches the expected `solve` contract",
+        ]
+        weaknesses = []
+        if not runtime_result.passed:
+            weaknesses.append("The implementation still fails one or more hidden cases")
+        if runtime_result.stderr:
+            weaknesses.append("The solution raised an execution error")
+        if not weaknesses:
+            weaknesses.append("Consider tightening time complexity or simplifying the code path")
+        recommended_next_topics = [attempt.exercise.topic]
+        if attempt.exercise.subtopic:
+            recommended_next_topics.append(attempt.exercise.subtopic)
+        recommended_next_topics.append("edge cases")
+
+        return {
+            "overall_score": overall_score,
+            "rubric_scores_json": rubric_scores,
+            "strengths_json": strengths,
+            "weaknesses_json": weaknesses,
+            "feedback_markdown": (
+                f"Your solution passed **{runtime_result.passed_cases}/{runtime_result.total_cases}** tests.\n\n"
+                + (runtime_result.stderr or "Execution completed without errors.")
+            ),
+            "recommended_next_topics": recommended_next_topics,
+            "improvement_actions_json": [
+                {
+                    "action": "Revisit the failing test cases",
+                    "why": "LeetCode-style practice is graded by exact runtime behavior.",
+                },
+                {
+                    "action": "Tighten the implementation around edge cases",
+                    "why": "Small input variations are usually where algorithmic solutions break.",
+                },
+            ],
+            "weakest_dimension": weakest_dimension,
+            "runtime_result": runtime_result,
+        }
+
     material = "\n".join(
         value for value in [attempt.answer_markdown, attempt.answer_code, attempt.answer_sql] if value
     )
