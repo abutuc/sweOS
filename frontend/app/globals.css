@@ -310,6 +310,127 @@ a {
   grid-column: 1 / -1;
 }
 
+.application-card-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 20px 0 8px;
+}
+
+.application-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.03);
+}
+
+.application-card-active {
+  border-color: rgba(104, 240, 216, 0.35);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.14);
+}
+
+.application-card h2 {
+  margin: 0 0 8px;
+}
+
+.application-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.ghost-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.ingestion-shell {
+  padding: 18px;
+}
+
+.ingestion-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ingestion-tab {
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.ingestion-tab-active {
+  color: var(--ink);
+  border-color: rgba(104, 240, 216, 0.25);
+  background: rgba(104, 240, 216, 0.12);
+}
+
+.ingestion-tab-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.ingestion-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ingestion-grid-two {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ingestion-columns {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ingestion-panel {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ingestion-panel h3 {
+  margin: 0 0 14px;
+  letter-spacing: -0.03em;
+}
+
+.ingestion-history-active {
+  border-color: rgba(104, 240, 216, 0.3) !important;
+  background: rgba(104, 240, 216, 0.06) !important;
+}
+
+.detail-stack {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .section-heading {
   margin-bottom: 18px;
 }
@@ -1019,6 +1140,10 @@ a {
   .app-shell-header,
   .auth-panel,
   .workspace-grid,
+  .application-card-grid,
+  .ingestion-grid,
+  .ingestion-grid-two,
+  .ingestion-columns,
   .skill-stack,
   .field-grid,
   .hero-stats,
@@ -1053,6 +1178,10 @@ a {
   .leetcode-meta-grid,
   .leetcode-results-grid {
     grid-template-columns: 1fr;
+  }
+
+  .application-card {
+    flex-direction: column;
   }
 
   .wizard-stepper {
