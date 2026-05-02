@@ -155,11 +155,22 @@ export function IngestionEnginePage() {
     setAuditEvents(auditResponse.data);
     setAccounts(accountsResponse.data);
     setTransactions(transactionsResponse.data);
-    setSelectedSourceId((current) => current ?? sourcesResponse.data[0]?.id ?? null);
-    setSelectedRunId((current) => current ?? runsResponse.data[0]?.id ?? null);
-    setSelectedItemId((current) => current ?? itemsResponse.data[0]?.id ?? null);
-    setSelectedJobId((current) => current ?? jobsResponse.data[0]?.id ?? null);
-    setSelectedReconciliationId((current) => current ?? reconciliationResponse.data[0]?.id ?? null);
+    const nextSourceId = selectedSourceId ?? sourcesResponse.data[0]?.id ?? null;
+    const nextRunId = selectedRunId ?? runsResponse.data[0]?.id ?? null;
+    const nextItemId = selectedItemId ?? itemsResponse.data[0]?.id ?? null;
+    const nextJobId = selectedJobId ?? jobsResponse.data[0]?.id ?? null;
+    const nextReconciliationId = selectedReconciliationId ?? reconciliationResponse.data[0]?.id ?? null;
+    setSelectedSourceId(nextSourceId);
+    setSelectedRunId(nextRunId);
+    setSelectedItemId(nextItemId);
+    setSelectedJobId(nextJobId);
+    setSelectedReconciliationId(nextReconciliationId);
+    if (nextReconciliationId) {
+      const discrepancyResponse = await api.listIngestionDiscrepancies(nextReconciliationId);
+      setDiscrepancies(discrepancyResponse.data);
+    } else {
+      setDiscrepancies([]);
+    }
     setError(null);
   };
 
