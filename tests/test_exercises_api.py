@@ -26,6 +26,12 @@ class _FakeColumn:
     def __eq__(self, other):
         return _Predicate(lambda obj: getattr(obj, self.field_name) == other)
 
+    def is_(self, other):
+        return _Predicate(lambda obj: getattr(obj, self.field_name) is other)
+
+    def contains(self, other):
+        return _Predicate(lambda obj: all(item in getattr(obj, self.field_name) for item in other))
+
     def asc(self):
         return self
 
@@ -40,6 +46,7 @@ class _FakeExerciseModel:
     topic = _FakeColumn("topic")
     difficulty = _FakeColumn("difficulty")
     created_at = _FakeColumn("created_at")
+    tags = _FakeColumn("tags")
 
 
 class _FakeAttemptModel:
@@ -127,6 +134,10 @@ def _override_current_user(user_id: uuid.UUID):
     return _override
 
 
+def _fake_or(*predicates):
+    return _Predicate(lambda obj: any(predicate.compare(obj) for predicate in predicates))
+
+
 def test_generate_exercise_returns_generated_exercise(monkeypatch):
     user_id = uuid.uuid4()
     exercise_id = uuid.uuid4()
@@ -195,6 +206,7 @@ def test_list_exercises_returns_user_exercises(monkeypatch):
         yield fake_session
 
     monkeypatch.setattr(exercises_api, "Exercise", _FakeExerciseModel)
+    monkeypatch.setattr(exercises_api, "or_", _fake_or)
     app.dependency_overrides[get_db_session] = override_get_db_session
     app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
@@ -205,6 +217,41 @@ def test_list_exercises_returns_user_exercises(monkeypatch):
 
     assert response.status_code == 200
     assert response.json()["data"][0]["title"] == "Two Sum Variant"
+    assert response.json()["meta"]["total"] == 1
+
+
+def test_list_exercises_returns_global_leetcode_catalog(monkeypatch):
+    user_id = uuid.uuid4()
+    fake_session = _FakeSession(
+        exercises=[
+            SimpleNamespace(
+                id=uuid.uuid4(),
+                user_id=None,
+                type=ExerciseType.dsa,
+                topic="arrays",
+                difficulty=DifficultyLevel.easy,
+                title="Two Sum",
+                tags=["leetcode", "arrays"],
+                created_at=datetime(2026, 4, 23, 12, 0, tzinfo=timezone.utc),
+            )
+        ]
+    )
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr(exercises_api, "Exercise", _FakeExerciseModel)
+    monkeypatch.setattr(exercises_api, "or_", _fake_or)
+    app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/exercises", params={"tag": "leetcode"})
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["data"][0]["title"] == "Two Sum"
     assert response.json()["meta"]["total"] == 1
 
 
@@ -235,6 +282,7 @@ def test_get_exercise_returns_full_exercise(monkeypatch):
         yield fake_session
 
     monkeypatch.setattr(exercises_api, "Exercise", _FakeExerciseModel)
+    monkeypatch.setattr(exercises_api, "or_", _fake_or)
     app.dependency_overrides[get_db_session] = override_get_db_session
     app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
@@ -270,6 +318,7 @@ def test_create_attempt_persists_attempt(monkeypatch):
 
     monkeypatch.setattr(exercises_api, "Exercise", _FakeExerciseModel)
     monkeypatch.setattr(exercises_api, "ExerciseAttempt", _WritableAttemptModel)
+    monkeypatch.setattr(exercises_api, "or_", _fake_or)
     app.dependency_overrides[get_db_session] = override_get_db_session
     app.dependency_overrides[require_current_user] = _override_current_user(user_id)
 
@@ -284,6 +333,77 @@ def test_create_attempt_persists_attempt(monkeypatch):
     assert response.status_code == 200
     assert response.json()["data"]["attempt"]["status"] == "submitted"
     assert fake_session.committed is True
+
+
+def test_run_exercise_executes_runtime_cases(monkeypatch):
+    user_id = uuid.uuid4()
+    exercise_id = uuid.uuid4()
+    fake_session = _FakeSession(
+        exercises=[
+            SimpleNamespace(
+                id=exercise_id,
+                user_id=None,
+                type=ExerciseType.dsa,
+                topic="arrays",
+                subtopic="hash-map lookup",
+                difficulty=DifficultyLevel.easy,
+                title="Two Sum",
+                prompt_markdown="Solve it",
+                constraints_json={
+                    "runtime": {
+                        "tests": [{"args": [[2, 7, 11, 15], 9], "expected": [0, 1]}]
+                    }
+                },
+                expected_outcomes_json=["Return indices"],
+                hints_json=["Use a map"],
+                tags=["leetcode", "arrays"],
+                created_at=datetime(2026, 4, 23, 12, 0, tzinfo=timezone.utc),
+            )
+        ]
+    )
+
+    def override_get_db_session():
+        yield fake_session
+
+    monkeypatch.setattr(
+        exercises_api,
+        "run_python_solution",
+        lambda source, tests: SimpleNamespace(
+            passed=True,
+            total_cases=len(tests),
+            passed_cases=len(tests),
+            stdout="",
+            stderr="",
+            runtime_ms=12.3,
+            case_results=[
+                SimpleNamespace(
+                    index=1,
+                    passed=True,
+                    input=[[2, 7, 11, 15], 9],
+                    expected=[0, 1],
+                    actual=[0, 1],
+                    error=None,
+                )
+            ],
+            message="All test cases passed.",
+        ),
+    )
+    monkeypatch.setattr(exercises_api, "Exercise", _FakeExerciseModel)
+    monkeypatch.setattr(exercises_api, "or_", _fake_or)
+    app.dependency_overrides[get_db_session] = override_get_db_session
+    app.dependency_overrides[require_current_user] = _override_current_user(user_id)
+
+    with TestClient(app) as client:
+        response = client.post(
+            f"/api/v1/exercises/{exercise_id}/run",
+            json={"answerCode": "def solve(nums, target): return [0, 1]"},
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["data"]["passed"] is True
+    assert response.json()["data"]["passedCases"] == 1
 
 
 def test_evaluate_attempt_returns_feedback(monkeypatch):
