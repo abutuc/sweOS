@@ -111,6 +111,10 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _enum_value(value: Any) -> Any:
+    return value.value if hasattr(value, "value") else value
+
+
 def _event(db: Session, *, entity_type: str, entity_id: str, event_type: str, actor_type: AuditActorType, actor_id: str | None = None, payload: dict[str, Any] | None = None) -> AuditEvent:
     event = AuditEvent(
         entity_type=entity_type,
@@ -125,10 +129,11 @@ def _event(db: Session, *, entity_type: str, entity_id: str, event_type: str, ac
 
 
 def _choose_parser(source_type: IngestionSourceType, use_ai: bool = False) -> Parser:
+    source_type_value = _enum_value(source_type)
     if use_ai:
         return MockAIParser()
 
-    if source_type is IngestionSourceType.mock_exchange:
+    if source_type_value == IngestionSourceType.mock_exchange.value:
         return RuleBasedParser()
 
     return RuleBasedParser()
@@ -137,8 +142,9 @@ def _choose_parser(source_type: IngestionSourceType, use_ai: bool = False) -> Pa
 def _sample_items_for_source(source: IngestionSource) -> list[dict[str, Any]]:
     config = source.config_json or {}
     base_url = parse_source_url(source.url) or source.url
+    source_type = _enum_value(source.type)
 
-    if source.type == IngestionSourceType.rss_feed:
+    if source_type == IngestionSourceType.rss_feed.value:
         feed_title = config.get("title") or source.name
         return [
             {
@@ -157,7 +163,7 @@ def _sample_items_for_source(source: IngestionSource) -> list[dict[str, Any]]:
             },
         ]
 
-    if source.type in {IngestionSourceType.manual_url, IngestionSourceType.company_careers_page}:
+    if source_type in {IngestionSourceType.manual_url.value, IngestionSourceType.company_careers_page.value}:
         return [
             {
                 "type": "job_post",
@@ -172,7 +178,7 @@ def _sample_items_for_source(source: IngestionSource) -> list[dict[str, Any]]:
             }
         ]
 
-    if source.type is IngestionSourceType.manual_text:
+    if source_type == IngestionSourceType.manual_text.value:
         return [
             {
                 "type": str(config.get("itemType") or "manual_text"),
@@ -183,7 +189,7 @@ def _sample_items_for_source(source: IngestionSource) -> list[dict[str, Any]]:
             }
         ]
 
-    if source.type in {IngestionSourceType.github_repository, IngestionSourceType.github_search}:
+    if source_type in {IngestionSourceType.github_repository.value, IngestionSourceType.github_search.value}:
         repo_name = config.get("repoName") or "sweos/ingestion-engine"
         owner, _, name = repo_name.partition("/")
         if not name:
@@ -207,7 +213,7 @@ def _sample_items_for_source(source: IngestionSource) -> list[dict[str, Any]]:
             }
         ]
 
-    if source.type is IngestionSourceType.job_board:
+    if source_type == IngestionSourceType.job_board.value:
         return [
             {
                 "type": "job_post",
@@ -222,7 +228,7 @@ def _sample_items_for_source(source: IngestionSource) -> list[dict[str, Any]]:
             }
         ]
 
-    if source.type is IngestionSourceType.mock_exchange:
+    if source_type == IngestionSourceType.mock_exchange.value:
         provider = config.get("provider") or "mock-exchange"
         return [
             {
@@ -305,7 +311,7 @@ def _persist_item(db: Session, run: IngestionRun, source: IngestionSource, paylo
             entity_id=str(item.id),
             event_type="item_fetched",
             actor_type=AuditActorType.worker,
-            payload={"contentHash": digest, "itemType": item.type},
+            payload={"contentHash": digest, "itemType": _enum_value(item.type)},
         )
     return item
 
@@ -364,7 +370,7 @@ def _queue_job(
         entity_id=str(job.id),
         event_type="worker_job_queued",
         actor_type=AuditActorType.system,
-        payload={"jobType": job_type, "idempotencyKey": idempotency_key},
+        payload={"jobType": _enum_value(job_type), "idempotencyKey": idempotency_key},
     )
     return job
 
@@ -403,7 +409,7 @@ def _process_job(db: Session, job: WorkerJob, source_lookup: dict[str, Ingestion
                 entity_id=str(run.id),
                 event_type="run_completed",
                 actor_type=AuditActorType.worker,
-                payload={"status": run.status, "fetchedItemCount": run.fetched_item_count, "parsedItemCount": run.parsed_item_count},
+                payload={"status": _enum_value(run.status), "fetchedItemCount": run.fetched_item_count, "parsedItemCount": run.parsed_item_count},
             )
         elif job.job_type == WorkerJobType.parse_item and job.item_id:
             item = db.get(IngestionItem, job.item_id)
@@ -491,7 +497,7 @@ def create_source(db: Session, user: User, payload: dict[str, Any]) -> Ingestion
     source = IngestionSource(
         user_id=user.id,
         name=payload["name"],
-        type=payload["type"],
+        type=_enum_value(payload["type"]),
         url=payload.get("url"),
         config_json=payload.get("config") or {},
         enabled=payload.get("enabled", True),
@@ -528,7 +534,8 @@ def get_source(db: Session, user: User, source_id: str) -> IngestionSource | Non
 
 def update_source(db: Session, user: User, source: IngestionSource, payload: dict[str, Any]) -> IngestionSource:
     source.name = payload.get("name", source.name)
-    source.type = payload.get("type", source.type)
+    if payload.get("type") is not None:
+        source.type = _enum_value(payload.get("type"))
     source.url = payload.get("url", source.url)
     source.config_json = payload.get("config", source.config_json)
     if "enabled" in payload:
@@ -553,7 +560,7 @@ def start_run(db: Session, user: User, source: IngestionSource, trigger_type: In
     run = IngestionRun(
         source_id=source.id,
         status=IngestionRunStatus.queued,
-        trigger_type=trigger_type,
+        trigger_type=_enum_value(trigger_type),
         expected_item_count=options.get("expectedItemCount"),
         metadata_json=options,
     )
@@ -565,7 +572,7 @@ def start_run(db: Session, user: User, source: IngestionSource, trigger_type: In
         job_type=WorkerJobType.fetch_source,
         run_id=str(run.id),
         item_id=None,
-        payload_json={"sourceId": str(source.id), "triggerType": trigger_type},
+        payload_json={"sourceId": str(source.id), "triggerType": _enum_value(trigger_type)},
         idempotency_key=build_idempotency_key("fetch_source", str(source.id), run.created_at.strftime("%Y%m%d%H")),
     )
     source_lookup = {str(source.id): source}
@@ -649,7 +656,7 @@ def queue_item_parse(db: Session, user: User, item: IngestionItem, use_ai: bool 
     if run is not None:
         run.metadata_json = {**(run.metadata_json or {}), "parseImmediately": True}
     source = db.get(IngestionSource, item.source_id) if item.source_id else None
-    parser = _choose_parser(source.type if source else IngestionSourceType.manual_text, use_ai=use_ai)
+    parser = _choose_parser(source.type if source else IngestionSourceType.manual_text.value, use_ai=use_ai)
     job = _queue_job(
         db,
         job_type=WorkerJobType.parse_item,
@@ -833,7 +840,7 @@ def reconcile_run(db: Session, run: IngestionRun, reconciliation_type: Reconcili
         entity_id=str(reconciliation_run.id),
         event_type="reconciliation_completed",
         actor_type=AuditActorType.worker,
-        payload={"type": reconciliation_type, "discrepancyCount": reconciliation_run.discrepancy_count},
+        payload={"type": _enum_value(reconciliation_type), "discrepancyCount": reconciliation_run.discrepancy_count},
     )
     db.commit()
     db.refresh(reconciliation_run)
