@@ -630,6 +630,90 @@ a {
   gap: 14px;
 }
 
+.leetcode-layout {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  margin-top: 14px;
+}
+
+.leetcode-toolbar {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(180px, 0.7fr);
+  margin-top: 14px;
+}
+
+.leetcode-sidebar,
+.leetcode-main {
+  min-width: 0;
+}
+
+.leetcode-board {
+  display: grid;
+  gap: 14px;
+}
+
+.leetcode-problem-item-active {
+  border-color: rgba(104, 240, 216, 0.4);
+  background: rgba(104, 240, 216, 0.08);
+}
+
+.leetcode-meta-grid,
+.leetcode-results-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.leetcode-signature,
+.leetcode-log {
+  display: block;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--ink);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.84rem;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.code-editor {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  min-height: 340px;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.code-editor:focus {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.leetcode-case-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.leetcode-case {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .learning-grid {
   grid-template-columns: 0.85fr 1.15fr;
 }
@@ -962,6 +1046,13 @@ a {
   .field-wide,
   .skeleton-line-wide {
     grid-column: auto;
+  }
+
+  .leetcode-layout,
+  .leetcode-toolbar,
+  .leetcode-meta-grid,
+  .leetcode-results-grid {
+    grid-template-columns: 1fr;
   }
 
   .wizard-stepper {
