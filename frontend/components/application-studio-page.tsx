@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useOnboardingStatus } from "@/components/use-onboarding-status";
@@ -172,6 +173,29 @@ export function ApplicationStudioPage() {
         <p className="hero-copy">
           Save opportunities, extract requirements, inspect gaps, and tailor structured CV versions without mixing this workflow into daily practice.
         </p>
+      </section>
+
+      <section className="application-card-grid">
+        <article className="application-card application-card-active">
+          <div>
+            <p className="section-kicker">Active</p>
+            <h2>Application Studio</h2>
+            <p>Job matching, CV tailoring, and readiness analysis in one workspace.</p>
+          </div>
+          <Link className="ghost-button" href="/applications">
+            Open
+          </Link>
+        </article>
+        <article className="application-card">
+          <div>
+            <p className="section-kicker">Experimental</p>
+            <h2>Ingestion Engine</h2>
+            <p>Background ingestion, reconciliation, worker jobs, and audit trails.</p>
+          </div>
+          <Link className="primary-button" href="/applications/ingestion-engine">
+            Open
+          </Link>
+        </article>
       </section>
 
       <p className="section-status">{isWorking ? "Working..." : status}</p>
