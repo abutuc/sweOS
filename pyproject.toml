@@ -25,6 +25,7 @@ dev = [
 sweos-create-tables = "app.scripts.create_tables:main"
 sweos-seed-default-user = "app.scripts.seed_default_user:main"
 sweos-seed-skill-catalog = "app.scripts.seed_skill_catalog:main"
+sweos-seed-leetcode-exercises = "app.scripts.seed_leetcode_exercises:main"
 sweos-bootstrap-epic1 = "app.scripts.bootstrap_epic1:main"
 
 [build-system]
