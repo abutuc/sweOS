@@ -77,6 +77,30 @@ class ExerciseAttemptCreateRequest(ApiSchema):
     submit: bool = True
 
 
+class ExerciseRunRequest(ApiSchema):
+    answer_code: str
+
+
+class ExerciseRunCaseRead(ApiSchema):
+    index: int
+    passed: bool
+    input: list[Any]
+    expected: Any
+    actual: Any | None = None
+    error: str | None = None
+
+
+class ExerciseRunResultRead(ApiSchema):
+    passed: bool
+    total_cases: int = Field(alias="totalCases")
+    passed_cases: int = Field(alias="passedCases")
+    stdout: str
+    stderr: str
+    runtime_ms: float | None = Field(alias="runtimeMs")
+    case_results: list[ExerciseRunCaseRead] = Field(alias="caseResults")
+    message: str
+
+
 class ExerciseAttemptRead(ApiSchema):
     model_config = ConfigDict(from_attributes=True)
 
@@ -113,6 +137,10 @@ class ExerciseEvaluationRead(ApiSchema):
 
 class ExerciseEvaluationEnvelope(ApiSchema):
     data: ExerciseEvaluationRead
+
+
+class ExerciseRunEnvelope(ApiSchema):
+    data: ExerciseRunResultRead
 
 
 class TopicMasteryRead(ApiSchema):
