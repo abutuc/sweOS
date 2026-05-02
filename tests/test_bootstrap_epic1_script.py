@@ -15,6 +15,7 @@ def test_bootstrap_epic1_main_runs_full_bootstrap_flow(monkeypatch):
     called = {
         "create_all": None,
         "seeded_db": None,
+        "seeded_leetcode_db": None,
         "bootstrapped_db": None,
     }
     fake_session = _FakeSession()
@@ -38,6 +39,10 @@ def test_bootstrap_epic1_main_runs_full_bootstrap_flow(monkeypatch):
         called["seeded_db"] = db
         return 8
 
+    def fake_seed_leetcode_exercises(db):
+        called["seeded_leetcode_db"] = db
+        return 50
+
     monkeypatch.setattr(bootstrap_epic1, "Base", _FakeBase)
     monkeypatch.setattr(bootstrap_epic1, "engine", fake_engine)
     monkeypatch.setattr(bootstrap_epic1, "SessionLocal", fake_session_local)
@@ -51,14 +56,21 @@ def test_bootstrap_epic1_main_runs_full_bootstrap_flow(monkeypatch):
         "seed_skill_catalog",
         fake_seed_skill_catalog,
     )
+    monkeypatch.setattr(
+        bootstrap_epic1,
+        "seed_leetcode_exercises",
+        fake_seed_leetcode_exercises,
+    )
 
     result = bootstrap_epic1.main()
 
     assert called["create_all"] is fake_engine
     assert called["bootstrapped_db"] is fake_session
     assert called["seeded_db"] is fake_session
+    assert called["seeded_leetcode_db"] is fake_session
     assert fake_session.closed is True
     assert result == {
         "user_email": "default@sweos.local",
         "created_skills": 8,
+        "created_leetcode": 50,
     }
