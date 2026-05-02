@@ -1,6 +1,19 @@
 # sweOS
 sweOS — the operating system for software engineers to learn, practice, and grow in the age of AI
 
+## Applications
+
+The Applications section now includes:
+
+- `Application Studio` for jobs, CV tailoring, and readiness workflows
+- `Ingestion Engine` for background ingestion, worker jobs, reconciliation, and audit trails
+
+Open the ingestion engine at:
+
+```text
+/applications/ingestion-engine
+```
+
 ## Local Development
 
 This repository currently contains a FastAPI backend scaffold for Epic 1.
@@ -18,6 +31,12 @@ python3.12 -m venv .venv
 docker compose up -d db
 sweos-create-tables
 sweos-bootstrap-epic1
+```
+
+The ingestion engine uses the same FastAPI backend and PostgreSQL database as the rest of sweOS. Its operational API lives under:
+
+```text
+/api/v1/ingestion
 ```
 
 ### Run Tests
