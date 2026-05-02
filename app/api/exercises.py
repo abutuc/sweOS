@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db_session, require_current_user
@@ -22,10 +23,15 @@ from app.schemas.exercise import (
     ExerciseListEnvelope,
     ExerciseRead,
     ExerciseSummary,
+    ExerciseRunEnvelope,
+    ExerciseRunRequest,
+    ExerciseRunCaseRead,
+    ExerciseRunResultRead,
     TopicMasteryEnvelope,
     TopicMasteryRead,
 )
 from app.services.exercise_engine import create_exercise_from_request, persist_evaluation
+from app.services.leetcode_runtime import run_python_solution
 
 
 router = APIRouter(tags=["exercises"])
@@ -45,6 +51,29 @@ def _serialize_exercise(exercise: Exercise) -> ExerciseRead:
         hints=exercise.hints_json,
         tags=exercise.tags,
         created_at=exercise.created_at,
+    )
+
+
+def _runtime_result_to_read(runtime_result) -> ExerciseRunResultRead:
+    return ExerciseRunResultRead(
+        passed=runtime_result.passed,
+        total_cases=runtime_result.total_cases,
+        passed_cases=runtime_result.passed_cases,
+        stdout=runtime_result.stdout,
+        stderr=runtime_result.stderr,
+        runtime_ms=runtime_result.runtime_ms,
+        case_results=[
+            ExerciseRunCaseRead(
+                index=item.index,
+                passed=item.passed,
+                input=item.input,
+                expected=item.expected,
+                actual=item.actual,
+                error=item.error,
+            )
+            for item in runtime_result.case_results
+        ],
+        message=runtime_result.message,
     )
 
 
@@ -74,12 +103,18 @@ def list_exercises(
     type: ExerciseType | None = Query(default=None),
     topic: str | None = Query(default=None),
     difficulty: DifficultyLevel | None = Query(default=None),
+    tag: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db_session),
     user: User = Depends(require_current_user),
 ) -> ExerciseListEnvelope:
-    query = db.query(Exercise).filter(Exercise.user_id == user.id)
+    query = db.query(Exercise)
+    if tag:
+        query = query.filter(or_(Exercise.user_id == user.id, Exercise.user_id.is_(None)))
+        query = query.filter(Exercise.tags.contains([tag]))
+    else:
+        query = query.filter(Exercise.user_id == user.id)
     if type:
         query = query.filter(Exercise.type == type)
     if topic:
@@ -103,7 +138,10 @@ def get_exercise(
 ) -> ExerciseDetailEnvelope:
     exercise = (
         db.query(Exercise)
-        .filter(Exercise.id == exercise_id, Exercise.user_id == user.id)
+        .filter(
+            Exercise.id == exercise_id,
+            or_(Exercise.user_id == user.id, Exercise.user_id.is_(None)),
+        )
         .one_or_none()
     )
     if exercise is None:
@@ -120,7 +158,10 @@ def create_attempt(
 ) -> ExerciseAttemptEnvelope:
     exercise = (
         db.query(Exercise)
-        .filter(Exercise.id == exercise_id, Exercise.user_id == user.id)
+        .filter(
+            Exercise.id == exercise_id,
+            or_(Exercise.user_id == user.id, Exercise.user_id.is_(None)),
+        )
         .one_or_none()
     )
     if exercise is None:
@@ -144,6 +185,30 @@ def create_attempt(
             attempt=ExerciseAttemptRead.model_validate(attempt),
         )
     )
+
+
+@router.post("/exercises/{exercise_id}/run", response_model=ExerciseRunEnvelope)
+def run_exercise(
+    exercise_id: uuid.UUID,
+    payload: ExerciseRunRequest,
+    db: Session = Depends(get_db_session),
+    user: User = Depends(require_current_user),
+) -> ExerciseRunEnvelope:
+    exercise = (
+        db.query(Exercise)
+        .filter(
+            Exercise.id == exercise_id,
+            or_(Exercise.user_id == user.id, Exercise.user_id.is_(None)),
+        )
+        .one_or_none()
+    )
+    if exercise is None:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+
+    runtime_config = exercise.constraints_json.get("runtime") or {}
+    runtime_tests = runtime_config.get("tests", [])
+    runtime_result = run_python_solution(payload.answer_code, runtime_tests)
+    return ExerciseRunEnvelope(data=_runtime_result_to_read(runtime_result))
 
 
 @router.post("/exercise-attempts/{attempt_id}/evaluate", response_model=ExerciseEvaluationEnvelope)
