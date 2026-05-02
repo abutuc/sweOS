@@ -249,6 +249,154 @@ export type CvFeedback = {
   suggestions: string[];
 };
 
+export type IngestionSource = {
+  id: string;
+  userId: string | null;
+  name: string;
+  type: string;
+  url: string | null;
+  config: Record<string, unknown>;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type IngestionRun = {
+  id: string;
+  sourceId: string | null;
+  status: string;
+  triggerType: string;
+  expectedItemCount: number | null;
+  fetchedItemCount: number;
+  parsedItemCount: number;
+  failedItemCount: number;
+  startedAt: string | null;
+  completedAt: string | null;
+  errorMessage: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type IngestionItem = {
+  id: string;
+  runId: string;
+  sourceId: string | null;
+  externalId: string | null;
+  canonicalUrl: string | null;
+  type: string;
+  title: string | null;
+  rawContent: string;
+  rawJson: Record<string, unknown>;
+  contentHash: string;
+  status: string;
+  duplicateOfId: string | null;
+  fetchedAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkerJob = {
+  id: string;
+  jobType: string;
+  status: string;
+  priority: number;
+  runId: string | null;
+  itemId: string | null;
+  idempotencyKey: string;
+  payload: Record<string, unknown>;
+  attempts: number;
+  maxAttempts: number;
+  lockedBy: string | null;
+  lockedUntil: string | null;
+  availableAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ReconciliationRun = {
+  id: string;
+  runId: string | null;
+  type: string;
+  status: string;
+  expectedCount: number;
+  actualCount: number;
+  discrepancyCount: number;
+  startedAt: string | null;
+  completedAt: string | null;
+  summaryMarkdown: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type ReconciliationDiscrepancy = {
+  id: string;
+  reconciliationRunId: string;
+  reconciliationItemId: string | null;
+  severity: string;
+  type: string;
+  description: string;
+  expected: Record<string, unknown>;
+  actual: Record<string, unknown>;
+  resolved: boolean;
+  resolvedAt: string | null;
+  createdAt: string;
+};
+
+export type AuditEvent = {
+  id: string;
+  entityType: string;
+  entityId: string;
+  eventType: string;
+  actorType: string;
+  actorId: string | null;
+  payload: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type ExternalAccount = {
+  id: string;
+  provider: string;
+  accountRef: string;
+  assetSymbol: string;
+  balance: number;
+  raw: Record<string, unknown>;
+  lastSyncedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ExternalTransaction = {
+  id: string;
+  provider: string;
+  externalTxId: string;
+  fromAccountRef: string | null;
+  toAccountRef: string | null;
+  assetSymbol: string;
+  amount: number;
+  fee: number;
+  status: string;
+  occurredAt: string;
+  raw: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type IngestionOverview = {
+  totalSources: number;
+  activeRuns: number;
+  queuedJobs: number;
+  failedJobs: number;
+  parsedItems: number;
+  openDiscrepancies: number;
+  deadLetteredJobs: number;
+  recentRunIds: string[];
+  recentFailedJobIds: string[];
+  recentDiscrepancyIds: string[];
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
 const READ_CACHE_TTL_MS = 4_000;
@@ -515,6 +663,90 @@ export const api = {
     }),
   createCvFeedback: (cvVersionId: string) =>
     mutatingRequest<{ data: { feedback: CvFeedback } }>(`/cv-versions/${cvVersionId}/feedback`, {
+      method: "POST",
+    }),
+  getIngestionOverview: () => cachedGet<{ data: IngestionOverview }>("/ingestion/overview"),
+  listIngestionSources: (params?: { type?: string; enabled?: boolean }) =>
+    cachedGet<{ data: IngestionSource[] }>(buildQueryPath("/ingestion/sources", params)),
+  createIngestionSource: (payload: { name: string; type: string; url?: string | null; config?: Record<string, unknown>; enabled?: boolean }) =>
+    mutatingRequest<{ data: IngestionSource }>("/ingestion/sources", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  updateIngestionSource: (sourceId: string, payload: { name?: string | null; type?: string | null; url?: string | null; config?: Record<string, unknown> | null; enabled?: boolean | null }) =>
+    mutatingRequest<{ data: IngestionSource }>(`/ingestion/sources/${sourceId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  enableIngestionSource: (sourceId: string) =>
+    mutatingRequest<{ data: IngestionSource }>(`/ingestion/sources/${sourceId}/enable`, {
+      method: "POST",
+    }),
+  disableIngestionSource: (sourceId: string) =>
+    mutatingRequest<{ data: IngestionSource }>(`/ingestion/sources/${sourceId}/disable`, {
+      method: "POST",
+    }),
+  startIngestionRun: (payload: { sourceId: string; triggerType?: string; options?: Record<string, unknown> }) =>
+    mutatingRequest<{ data: IngestionRun }>("/ingestion/runs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  listIngestionRuns: (params?: { status?: string; limit?: number; offset?: number }) =>
+    cachedGet<{ data: IngestionRun[]; meta: Record<string, number> }>(buildQueryPath("/ingestion/runs", params)),
+  getIngestionRun: (runId: string) => cachedGet<{ data: IngestionRun }>(`/ingestion/runs/${runId}`),
+  cancelIngestionRun: (runId: string) =>
+    mutatingRequest<{ data: IngestionRun }>(`/ingestion/runs/${runId}/cancel`, {
+      method: "POST",
+    }),
+  listIngestionItems: (params?: { runId?: string; type?: string; status?: string }) =>
+    cachedGet<{ data: IngestionItem[] }>(buildQueryPath("/ingestion/items", params)),
+  getIngestionItem: (itemId: string) => cachedGet<{ data: IngestionItem }>(`/ingestion/items/${itemId}`),
+  queueIngestionItemParse: (itemId: string) =>
+    mutatingRequest<{ data: { jobId: string; status: string } }>(`/ingestion/items/${itemId}/parse`, {
+      method: "POST",
+    }),
+  archiveIngestionItem: (itemId: string) =>
+    mutatingRequest<{ data: IngestionItem }>(`/ingestion/items/${itemId}/archive`, {
+      method: "POST",
+    }),
+  listIngestionWorkerJobs: (params?: { status?: string; jobType?: string }) =>
+    cachedGet<{ data: WorkerJob[] }>(buildQueryPath("/ingestion/worker-jobs", params)),
+  getIngestionWorkerJob: (jobId: string) => cachedGet<{ data: WorkerJob }>(`/ingestion/worker-jobs/${jobId}`),
+  retryIngestionWorkerJob: (jobId: string) =>
+    mutatingRequest<{ data: WorkerJob }>(`/ingestion/worker-jobs/${jobId}/retry`, {
+      method: "POST",
+    }),
+  cancelIngestionWorkerJob: (jobId: string) =>
+    mutatingRequest<{ data: WorkerJob }>(`/ingestion/worker-jobs/${jobId}/cancel`, {
+      method: "POST",
+    }),
+  startIngestionReconciliation: (payload: { runId: string; type: string }) =>
+    mutatingRequest<{ data: ReconciliationRun }>("/ingestion/reconciliation-runs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  listIngestionReconciliationRuns: (params?: { type?: string }) =>
+    cachedGet<{ data: ReconciliationRun[] }>(buildQueryPath("/ingestion/reconciliation-runs", params)),
+  getIngestionReconciliationRun: (reconciliationRunId: string) =>
+    cachedGet<{ data: ReconciliationRun }>(`/ingestion/reconciliation-runs/${reconciliationRunId}`),
+  listIngestionDiscrepancies: (reconciliationRunId: string) =>
+    cachedGet<{ data: ReconciliationDiscrepancy[] }>(`/ingestion/reconciliation-runs/${reconciliationRunId}/discrepancies`),
+  resolveIngestionDiscrepancy: (discrepancyId: string) =>
+    mutatingRequest<{ data: { resolved: boolean } }>(`/ingestion/discrepancies/${discrepancyId}/resolve`, {
+      method: "POST",
+    }),
+  listIngestionAuditEvents: (params?: { entityType?: string; entityId?: string; eventType?: string }) =>
+    cachedGet<{ data: AuditEvent[] }>(buildQueryPath("/ingestion/audit-events", params)),
+  syncIngestionMockExchange: (sourceId: string) =>
+    mutatingRequest<{ data: IngestionRun }>(`/ingestion/mock-exchange/sync?source_id=${encodeURIComponent(sourceId)}`, {
+      method: "POST",
+    }),
+  listIngestionMockExchangeAccounts: () =>
+    cachedGet<{ data: ExternalAccount[] }>("/ingestion/mock-exchange/accounts"),
+  listIngestionMockExchangeTransactions: () =>
+    cachedGet<{ data: ExternalTransaction[] }>("/ingestion/mock-exchange/transactions"),
+  reconcileIngestionMockExchangeTransfers: (sourceId: string) =>
+    mutatingRequest<{ data: { runId: string; status: string } }>(`/ingestion/mock-exchange/reconcile-transfers?source_id=${encodeURIComponent(sourceId)}`, {
       method: "POST",
     }),
 };
