@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { LeetCodeArenaSection } from "@/components/leetcode-arena-section";
 import { LearningGymSection } from "@/components/learning-gym-section";
 import { api, type LearningSummary } from "@/lib/api";
 import { isProfileOnboardingComplete } from "@/lib/onboarding";
@@ -66,6 +67,7 @@ export function PracticePage() {
       </section>
 
       <section className="workspace-grid">
+        <LeetCodeArenaSection className="workspace-card workspace-card-wide" />
         <LearningGymSection
           className="workspace-card workspace-card-wide"
           initialExercises={summary.exercises}
