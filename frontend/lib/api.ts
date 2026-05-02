@@ -116,6 +116,26 @@ export type ExerciseEvaluation = {
   improvementActions: Array<{ action: string; why: string }>;
 };
 
+export type ExerciseRunCase = {
+  index: number;
+  passed: boolean;
+  input: unknown[];
+  expected: unknown;
+  actual: unknown | null;
+  error: string | null;
+};
+
+export type ExerciseRunResult = {
+  passed: boolean;
+  totalCases: number;
+  passedCases: number;
+  stdout: string;
+  stderr: string;
+  runtimeMs: number | null;
+  caseResults: ExerciseRunCase[];
+  message: string;
+};
+
 export type TopicMastery = {
   topic: string;
   attemptsCount: number;
@@ -302,6 +322,23 @@ function cachedGet<T>(path: string): Promise<T> {
   return promise;
 }
 
+function buildQueryPath(path: string, params?: Record<string, string | number | boolean | undefined>) {
+  if (!params) {
+    return path;
+  }
+
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined) {
+      continue;
+    }
+    query.set(key, String(value));
+  }
+
+  const queryString = query.toString();
+  return queryString.length > 0 ? `${path}?${queryString}` : path;
+}
+
 async function mutatingRequest<T>(path: string, init: RequestInit): Promise<T> {
   const response = await request<T>(path, init);
   clearReadCache();
@@ -391,8 +428,23 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  listExercises: () => cachedGet<{ data: ExerciseSummary[]; meta: Record<string, number> }>("/exercises"),
+  listExercises: (params?: {
+    type?: string;
+    topic?: string;
+    difficulty?: string;
+    tag?: string;
+    limit?: number;
+    offset?: number;
+  }) =>
+    cachedGet<{ data: ExerciseSummary[]; meta: Record<string, number> }>(
+      buildQueryPath("/exercises", params),
+    ),
   getExercise: (exerciseId: string) => cachedGet<{ data: Exercise }>(`/exercises/${exerciseId}`),
+  runExerciseCode: (exerciseId: string, payload: { answerCode: string }) =>
+    mutatingRequest<{ data: ExerciseRunResult }>(`/exercises/${exerciseId}/run`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   createAttempt: (
     exerciseId: string,
     payload: {
